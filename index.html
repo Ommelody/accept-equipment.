@@ -8,7 +8,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.all.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <!-- ========================================== -->
@@ -666,7 +666,8 @@
       - ถ้ายังไม่ตั้งค่า URL จะเข้าสู่ "โหมดตัวอย่าง" ด้วยข้อมูลจำลอง
       - ตั้งค่า URL ได้ที่ไอคอนเฟืองมุมขวาบน                                       */
   /* ============================================================== */
-  const GAS_URL = localStorage.getItem('assetGasUrl') || '';
+  const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzOhLuN_mRcsSyzRKBoqdwerZnx2T6U2-co9colzg1FxhwJczKg5BxMS6ZW4wZb3MUV/exec';
+  const GAS_URL = localStorage.getItem('assetGasUrl') || DEFAULT_GAS_URL;
   window.__GAS_URL = GAS_URL;
 
   const SAMPLE = {
@@ -723,7 +724,7 @@
           .catch(err => {
             window.__setConn && window.__setConn(false);
             // ลองใหม่อัตโนมัติสูงสุด 4 ครั้ง (เน็ตสะดุด/หลับ) แบบถอยเวลาเพิ่มขึ้น
-            if (attempt < 4) { setTimeout(() => call(action, args, attempt + 1), 1200 * (attempt + 1)); }
+            if (attempt < 3) { setTimeout(() => call(action, args, attempt + 1), 900 * (attempt + 1)); }
             else if (onF) onF(String(err)); else console.error(err);
           });
       };
@@ -754,6 +755,33 @@
     window.google = { script:{ run:run, host:{ close(){}, editor:{} } } };
   }
 
+  // ป้องกันปุ่มค้าง: Swal.fire ครั้งใหม่ต้องปิด popup โหลดเดิมก่อนเสมอ ไม่งั้นปุ่มของ popup ใหม่จะสืบทอดสถานะ disabled จาก showLoading()
+  (function(){
+    const _fire = Swal.fire.bind(Swal);
+    Swal.fire = function(){
+      try { if (Swal.isLoading && Swal.isLoading()) Swal.close(); } catch(e){}
+      return _fire.apply(Swal, arguments);
+    };
+  })();
+
+  // ตาข่ายนิรภัย: ถ้า popup ค้างอยู่ในหน้า (เช่น CDN/แอนิเมชันปิดค้าง) ให้บังคับลบทิ้งหลังกดปิด/พ้นเวลาสมควร
+  (function(){
+    function forceRemoveStuckSwal(){
+      document.querySelectorAll('.swal2-container').forEach(el => el.remove());
+      document.body.classList.remove('swal2-shown', 'swal2-height-auto', 'swal2-no-backdrop');
+      document.body.style.removeProperty('padding-right');
+    }
+    document.addEventListener('click', (e) => {
+      if (e.target.closest && e.target.closest('.swal2-close, .swal2-cancel, .swal2-confirm, .swal2-deny')) {
+        setTimeout(() => {
+          const c = document.querySelector('.swal2-container');
+          if (c && getComputedStyle(c).display !== 'none') forceRemoveStuckSwal();
+        }, 400);
+      }
+    }, true);
+    window.__forceCloseSwal = forceRemoveStuckSwal;
+  })();
+
   let db = { vendors: [], depts: [], floors: [], rooms: [], types: [], masterData: [] };
   let currentHistoryData = [];
   let activeRowIndex = -1;
@@ -771,12 +799,22 @@
 
   $(document).ready(() => {
     $('#modalPreviewImage').attr('src', NO_IMG);
-    Swal.fire({ title: 'กำลังโหลดข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'กำลังโหลดข้อมูล...', allowOutsideClick: false, timer: 15000, timerProgressBar: true, didOpen: () => Swal.showLoading() });
     google.script.run.withSuccessHandler(data => {
       db = data;
       renderOptions('vendor', db.vendors);
       $('.select2-s').select2({ width: '100%', tags: true });
       Swal.close();
+    }).withFailureHandler(err => {
+      Swal.fire({
+        icon: 'error', title: 'เชื่อมต่อฐานข้อมูลไม่ได้',
+        html: 'สาเหตุที่พบบ่อย:<br>' +
+          '• Deploy ยังไม่ได้ตั้ง <b>Who has access: Anyone</b><br>' +
+          '• URL เป็นเวอร์ชันเก่า (ต้อง Deploy ใหม่แล้วคัดลอก URL ล่าสุด)<br>' +
+          '• พิมพ์ URL ผิด/ไม่ลงท้ายด้วย <code>/exec</code><br><br>' +
+          'ตรวจสอบที่ไอคอนเฟือง มุมขวาบน<br><small class="text-muted">' + err + '</small>',
+        confirmButtonText: 'เปิดตั้งค่า', showCancelButton: true, cancelButtonText: 'ปิด'
+      }).then(r => { if (r.isConfirmed) openSettings(); });
     }).getInitialData();
   });
 
@@ -1439,6 +1477,12 @@
       <div class="modal-body p-4">
         <label class="form-label">Google Apps Script — Web app URL</label>
         <input id="gasUrlInput" class="form-control" placeholder="https://script.google.com/macros/s/..../exec">
+        <div id="urlSourceNote" class="small mt-1"></div>
+        <div class="d-flex gap-2 mt-2">
+          <button type="button" class="btn btn-outline-info btn-sm" onclick="testConnection()"><i class="bi bi-plug me-1"></i> ทดสอบการเชื่อมต่อ</button>
+          <button type="button" class="btn btn-outline-warning btn-sm" onclick="resetToDefaultUrl()"><i class="bi bi-arrow-counterclockwise me-1"></i> ใช้ค่าเริ่มต้น / ล้างการตั้งค่า</button>
+        </div>
+        <div id="testConnResult" class="mt-2"></div>
         <div class="mt-3 p-3 rounded" style="background:var(--surface-2);border:1px solid var(--border)">
           <small class="text-muted d-block"><i class="bi bi-1-circle me-1 text-orange"></i> เปิด Apps Script แล้ว Deploy &rsaquo; New deployment &rsaquo; <b>Web app</b></small>
           <small class="text-muted d-block mt-2"><i class="bi bi-2-circle me-1 text-orange"></i> Execute as: <b>Me</b> &nbsp;·&nbsp; Who has access: <b>Anyone</b></small>
@@ -1467,9 +1511,41 @@
   window.addEventListener('load', () => window.__setConn(navigator.onLine));
 
   function openSettings(){
-    document.getElementById('gasUrlInput').value = localStorage.getItem('assetGasUrl') || '';
+    document.getElementById('testConnResult').innerHTML = '';
+    const saved = localStorage.getItem('assetGasUrl');
+    document.getElementById('gasUrlInput').value = saved || DEFAULT_GAS_URL;
+    const note = document.getElementById('urlSourceNote');
+    note.innerHTML = saved
+      ? '<span class="text-warning"><i class="bi bi-exclamation-triangle me-1"></i> กำลังใช้ URL ที่บันทึกไว้ในเครื่องนี้ (ทับค่าเริ่มต้นของระบบ)</span>'
+      : '<span class="text-muted"><i class="bi bi-info-circle me-1"></i> กำลังใช้ URL ค่าเริ่มต้นของระบบ</span>';
     new bootstrap.Modal(document.getElementById('settingsModal')).show();
   }
+
+  function resetToDefaultUrl(){
+    localStorage.removeItem('assetGasUrl');
+    location.reload();
+  }
+
+  async function testConnection(){
+    const url = document.getElementById('gasUrlInput').value.trim() || DEFAULT_GAS_URL;
+    const box = document.getElementById('testConnResult');
+    box.innerHTML = '<small class="text-muted"><span class="spinner-border spinner-border-sm me-1"></span> กำลังทดสอบ...</small>';
+    try {
+      const res = await fetch(url, { method: 'GET', redirect: 'follow' });
+      const text = await res.text();
+      const looksLikeLogin = /accounts\.google\.com|ServiceLogin|เข้าสู่ระบบ/i.test(text);
+      if (looksLikeLogin) {
+        box.innerHTML = '<div class="text-danger small"><i class="bi bi-x-circle me-1"></i> ถูกรีไดเรกต์ไปหน้า Login ของ Google — ตั้งค่า Deploy: <b>Who has access ต้องเป็น "Anyone"</b> (ไม่ใช่ "Anyone with Google account")</div>';
+      } else if (res.ok) {
+        box.innerHTML = '<div class="text-success small"><i class="bi bi-check-circle me-1"></i> เชื่อมต่อได้ (HTTP ' + res.status + ') — ' + text.slice(0, 140).replace(/</g, '&lt;') + '</div>';
+      } else {
+        box.innerHTML = '<div class="text-danger small"><i class="bi bi-x-circle me-1"></i> HTTP ' + res.status + ' — ' + text.slice(0, 140).replace(/</g, '&lt;') + '</div>';
+      }
+    } catch (err) {
+      box.innerHTML = '<div class="text-danger small"><i class="bi bi-x-circle me-1"></i> เชื่อมต่อไม่ได้เลย (' + err + ')<br>สาเหตุมักเกิดจาก URL ผิด หรือ Deploy ยังไม่ได้ตั้ง Anyone</div>';
+    }
+  }
+
   function saveSettings(){
     const u = document.getElementById('gasUrlInput').value.trim();
     if (u && !/^https:\/\/script\.google\.com\/.+/.test(u)) {

@@ -1,8 +1,9 @@
 /* Service Worker — ASSET System PWA
-   - Precache app shell (ทำงานออฟไลน์ได้)
-   - Runtime cache สำหรับ CDN (stale-while-revalidate)
-   - ไม่แคชคำขอไปยัง backend (GAS) เพื่อให้ข้อมูลสดเสมอ */
-const CACHE = 'asset-shell-v1';
+   - HTML shell: network-first (ข้อมูล/URL ที่ฝังไว้ต้องเป็นเวอร์ชันล่าสุดเสมอเมื่อออนไลน์)
+   - Static assets (ไอคอน/manifest): cache-first
+   - ไม่แคชคำขอไปยัง backend (GAS) เพื่อให้ข้อมูลสดเสมอ
+   - ออฟไลน์: ใช้แคชล่าสุดที่มี */
+const CACHE = 'asset-shell-v2';
 const SHELL = [
   './',
   './index.html',
@@ -37,7 +38,20 @@ self.addEventListener('fetch', (e) => {
     return; // ปล่อยให้เบราว์เซอร์จัดการปกติ
   }
 
-  // shell + assets: cache-first + อัปเดตพื้นหลัง (stale-while-revalidate)
+  const isHtmlShell = url.origin === location.origin && (req.mode === 'navigate' || req.destination === 'document' || url.pathname.endsWith('/') || url.pathname.endsWith('index.html'));
+
+  if (isHtmlShell) {
+    // network-first: ต้องได้หน้าล่าสุดทุกครั้งที่ออนไลน์ (กัน URL/ค่าฝังตัวค้างจากแคชเก่า)
+    e.respondWith(
+      fetch(req, { cache: 'no-store' }).then((res) => {
+        if (res && res.status === 200) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+        return res;
+      }).catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // asset อื่น ๆ (ไอคอน/manifest/CDN): cache-first + อัปเดตพื้นหลัง
   e.respondWith(
     caches.match(req).then((cached) => {
       const fetchPromise = fetch(req).then((res) => {
@@ -51,3 +65,4 @@ self.addEventListener('fetch', (e) => {
     })
   );
 });
+
