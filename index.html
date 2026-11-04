@@ -14,7 +14,7 @@
 <!-- ========================================== -->
 <!-- การตั้งค่า PWA / Add to Home Screen -->
 <!-- ========================================== -->
-<meta name="theme-color" content="#0E0F12">
+<meta name="theme-color" content="#1E1B4B">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SAWARiN">
@@ -354,52 +354,240 @@
       body{ background:#fff; margin:0; padding:0; color:#000; font-family:'Sarabun', sans-serif; }
       body.mode-summary #printSectionSummary{ display:block !important; }
       body.mode-single #printSectionSingle{ display:block !important; }
-      body.mode-summary{ @page{ size:A4 landscape; margin:10mm; } }
-      body.mode-single{ @page{ size:A4 portrait; margin:15mm; } }
-      .print-title-sum{ font-size:18pt; font-weight:bold; text-align:center; margin-bottom:5px; }
-      .print-header-info{ display:flex; justify-content:space-between; margin-bottom:15px; font-size:12pt; }
-      .print-items-table{ width:100%; border-collapse:collapse; font-size:11pt; margin-bottom:20px; }
-      .print-items-table th, .print-items-table td{ border:1px solid #000; padding:6px; text-align:left; vertical-align:middle; }
+      html, body{ width:auto !important; height:auto !important; padding:0 !important; margin:0 !important; overflow:visible !important; }
+      #printSectionSummary, #printSectionSingle{ width:100% !important; max-width:100% !important; box-sizing:border-box; overflow:hidden; }
+      #printSectionSummary *, #printSectionSingle *{ box-sizing:border-box; max-width:100%; word-wrap:break-word; overflow-wrap:anywhere; }
+      .print-table-single, .print-items-table{ table-layout:fixed; width:100% !important; }
+      .print-title-sum{ font-size:15pt; font-weight:bold; text-align:center; margin-bottom:5px; }
+      .print-header-info{ display:flex; justify-content:space-between; margin-bottom:10px; font-size:10pt; }
+      .print-items-table{ width:100%; border-collapse:collapse; font-size:9pt; margin-bottom:14px; }
+      .print-items-table th, .print-items-table td{ border:1px solid #000; padding:4px 5px; text-align:left; vertical-align:middle; }
       .print-items-table th{ background-color:#eee !important; -webkit-print-color-adjust:exact; }
       .print-items-table tr{ page-break-inside:avoid; }
-      .signature-area{ display:flex; justify-content:space-around; margin-top:40px; text-align:center; page-break-inside:avoid; }
-      .print-title-single{ font-size:18pt; font-weight:bold; margin-top:10px; text-align:center; }
-      .print-subtitle{ font-size:14pt; margin-bottom:15px; text-align:left; }
-      .print-table-single{ width:100%; border-collapse:collapse; font-size:12pt; }
-      .print-table-single th, .print-table-single td{ border:1px solid #000; padding:8px; vertical-align:middle; }
-      .print-img-box{ height:400px; text-align:center; vertical-align:middle; padding:10px; }
-      .print-img-box img{ max-width:100%; max-height:380px; object-fit:contain; }
+      .signature-area{ display:flex; justify-content:space-around; margin-top:24px; font-size:10pt; text-align:center; page-break-inside:avoid; }
+      .print-title-single{ font-size:15pt; font-weight:bold; margin-top:10px; text-align:center; }
+      .print-subtitle{ font-size:11pt; margin-bottom:10px; text-align:left; }
+      .print-table-single{ width:100%; border-collapse:collapse; font-size:10pt; }
+      .print-table-single th, .print-table-single td{ border:1px solid #000; padding:5px 7px; vertical-align:middle; }
+      .print-img-box{ height:300px; text-align:center; vertical-align:middle; padding:6px; }
+      .print-img-box img{ max-width:100%; max-height:285px; object-fit:contain; }
       .print-label{ width:25%; font-weight:bold; background-color:#f9f9f9 !important; -webkit-print-color-adjust:exact; }
     }
+  
+    /* ===== StarChart theme (designmd.ai/chef/starchart) ===== */
+    :root{
+      --orange:#A78BFA; --orange-2:#8B5CF6; --orange-3:#C4B5FD;
+      --star:#FDE047; --star-2:#FACC15; --ok:#4ADE80; --warn:#FBBF24; --err:#F87171; --info:#60A5FA;
+      --bg:#1E1B4B; --bg-2:#242056; --surface:#2A2668; --surface-2:#332E78; --surface-3:#3E3889;
+      --border:rgba(167,139,250,.16); --border-2:rgba(167,139,250,.30);
+      --text:#F3F0FF; --muted:#BDB7E6; --dim:#8F89C4;
+      --accent-soft:rgba(167,139,250,.18);
+      --radius:22px; --radius-sm:14px;
+      --shadow:0 0 0 1px rgba(167,139,250,.14), 0 14px 34px -14px rgba(139,92,246,.45);
+      --shadow-press:inset 0 0 0 1px rgba(167,139,250,.22);
+    }
+    body.theme-light{
+      --orange:#6D43E0; --orange-2:#5B34C9; --orange-3:#7C5AE8;
+      --bg:#EEEAFE; --bg-2:#F6F3FF; --surface:#F8F6FF; --surface-2:#EBE6FD; --surface-3:#DDD6FA;
+      --border:rgba(30,27,75,.10); --border-2:rgba(30,27,75,.20);
+      --text:#1E1B4B; --muted:#524C8A; --dim:#8480B3;
+      --accent-soft:rgba(109,67,224,.12);
+      --shadow:0 0 0 1px rgba(30,27,75,.08), 0 14px 30px -16px rgba(91,52,201,.35);
+      --shadow-press:inset 0 0 0 1px rgba(30,27,75,.14);
+    }
+    body{
+      font-family:'DM Sans','Sarabun',sans-serif;
+      background:
+        radial-gradient(1.5px 1.5px at 12% 18%, rgba(253,224,71,.85), transparent 60%),
+        radial-gradient(1px 1px at 78% 12%, rgba(255,255,255,.7), transparent 60%),
+        radial-gradient(1.5px 1.5px at 88% 62%, rgba(253,224,71,.6), transparent 60%),
+        radial-gradient(1px 1px at 34% 74%, rgba(255,255,255,.55), transparent 60%),
+        radial-gradient(1px 1px at 55% 40%, rgba(167,139,250,.9), transparent 60%),
+        radial-gradient(900px 520px at 85% -8%, rgba(139,92,246,.30), transparent 60%),
+        var(--bg) !important;
+      background-attachment:fixed !important;
+    }
+    body.theme-light{ background:radial-gradient(900px 520px at 85% -8%, rgba(139,92,246,.14), transparent 60%), var(--bg) !important; background-attachment:fixed !important; }
+    .hd-tt, .brand-text > span:first-child, .modal-title, .swal2-title, .card-header{ font-family:'Fredoka','Sarabun',sans-serif; letter-spacing:.2px; }
+    .table th{ font-family:'Fredoka','Sarabun',sans-serif; }
+    .history-row td:first-child, .text-warning.fw-bold, .sn, code{ font-family:'Space Mono','Sarabun',monospace; font-size:.9em; }
+    .brand-text b{ color:var(--star); }
+    body.theme-light .brand-text b{ color:var(--orange); }
+    .navbar{ background:var(--bg-2); border-bottom:1px solid var(--border-2); box-shadow:0 8px 24px -16px rgba(139,92,246,.6); }
+    .brand-logo{ box-shadow:0 0 18px rgba(167,139,250,.55); background:var(--surface-2) !important; }
+    .nav-link.active{ background:var(--accent-soft); box-shadow:0 0 14px rgba(167,139,250,.35); }
+    .card{ border:1px solid var(--border); }
+    .hd-ic{ background:var(--accent-soft); box-shadow:0 0 14px rgba(167,139,250,.30); }
+    .form-control, .form-select{ border:1px solid var(--border-2) !important; box-shadow:none !important; }
+    .form-control:focus, .form-select:focus{ border-color:var(--orange) !important; box-shadow:0 0 0 3px var(--accent-soft), 0 0 14px rgba(167,139,250,.35) !important; }
+    .select2-container--default .select2-selection--single{ border:1px solid var(--border-2) !important; box-shadow:none !important; }
+    .btn-orange{ background:linear-gradient(150deg,var(--star),var(--star-2)); color:#1E1B4B; box-shadow:0 0 18px rgba(253,224,71,.35); }
+    .btn-orange:hover{ color:#1E1B4B; box-shadow:0 0 26px rgba(253,224,71,.55); filter:none; }
+    .item-number{ background:linear-gradient(150deg,var(--star),var(--star-2)); color:#1E1B4B; box-shadow:0 0 14px rgba(253,224,71,.5); }
+    .btn-warning{ background:rgba(253,224,71,.14); color:var(--star); border-color:rgba(253,224,71,.4); }
+    .btn-warning:hover{ background:rgba(253,224,71,.24); color:var(--star); }
+    body.theme-light .btn-warning{ color:#7A5A00; background:rgba(250,204,21,.25); border-color:rgba(122,90,0,.35); }
+    .text-warning{ color:var(--star) !important; }
+    body.theme-light .text-warning{ color:#8A6A00 !important; }
+    .text-info{ color:var(--info) !important; }
+    .badge.bg-warning{ background:rgba(253,224,71,.16) !important; color:var(--star) !important; }
+    body.theme-light .badge.bg-warning{ background:rgba(250,204,21,.35) !important; color:#6B4E00 !important; }
+    .btn-outline-danger{ color:var(--err); border-color:rgba(248,113,113,.5); }
+    .btn-outline-danger:hover{ background:rgba(248,113,113,.15); color:var(--err); }
+    .page-item.active .page-link{ background:var(--star); border-color:var(--star); color:#1E1B4B; }
+    .select2-container--default .select2-results__option--highlighted[aria-selected]{ background:var(--orange) !important; color:#1E1B4B !important; }
+    .history-row:hover{ background:var(--accent-soft) !important; }
+    .mobile-nav{ background:rgba(36,32,86,.96) !important; border-top:1px solid var(--border-2); }
+    body.theme-light .mobile-nav{ background:rgba(246,243,255,.97) !important; }
+    .mnav.active{ background:var(--accent-soft); box-shadow:0 0 14px rgba(167,139,250,.35); }
+    .modal-content{ border:1px solid var(--border-2); }
+    .swal2-popup{ border:1px solid var(--border-2); }
+    .swal2-confirm{ background:var(--star) !important; color:#1E1B4B !important; font-weight:700; }
+  
+    /* ===== App shell layout (desktop sidebar + topbar, mobile bottom-nav) ===== */
+    .footer{ display:none !important; }
+    .sidebar{ display:none; }
+    .topbar{
+      position:sticky; top:0; z-index:1030; display:flex; align-items:center; gap:16px;
+      padding:14px 28px; background:var(--bg); border-bottom:1px solid var(--border);
+    }
+    .tb-brand{ display:none; align-items:center; gap:10px; font-family:'Fredoka','Sarabun',sans-serif; font-weight:600; font-size:1.05rem; color:var(--text); }
+    .tb-brand img{ width:36px; height:36px; border-radius:12px; box-shadow:0 0 14px rgba(167,139,250,.5); }
+    .tb-brand b{ color:var(--star); }
+    body.theme-light .tb-brand b{ color:var(--orange); }
+    .tb-title{ flex:1; min-width:0; }
+    .tb-title h1{ font-family:'Fredoka','Sarabun',sans-serif; font-weight:600; font-size:1.45rem; margin:0; color:var(--text); line-height:1.2; }
+    .tb-title p{ margin:2px 0 0; font-size:.84rem; color:var(--muted); }
+    .tb-actions{ display:flex; align-items:center; gap:10px; margin-left:auto; }
+    .tb-btn{
+      width:44px; height:44px; border-radius:14px; border:1px solid var(--border-2);
+      background:var(--surface-2); color:var(--text); font-size:1.1rem; display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:all .16s ease;
+    }
+    .tb-btn:hover{ border-color:var(--orange); color:var(--orange); box-shadow:0 0 14px rgba(167,139,250,.35); }
+    .tb-conn{ display:inline-flex; align-items:center; gap:7px; font-size:.78rem; font-weight:600; color:var(--muted); padding:0 14px; height:44px; border-radius:14px; background:var(--surface-2); border:1px solid var(--border); }
+    .page-section{ max-width:1320px; margin:0 auto; padding:26px 28px !important; width:100%; }
+    .main-container{ max-width:1320px; }
+
+    /* ===== Mobile / tablet : bottom nav ===== */
+    @media (max-width: 991.98px){
+      .mobile-nav{
+        display:flex !important; position:fixed; bottom:0; left:0; right:0; z-index:1060;
+        padding:6px 10px calc(6px + env(safe-area-inset-bottom));
+        border-top:1px solid var(--border-2);
+      }
+      .mnav{
+        flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+        padding:8px 2px; border-radius:14px; color:var(--muted); font-size:.7rem; font-weight:600;
+        cursor:pointer; user-select:none; text-align:center; font-family:'Fredoka','Sarabun',sans-serif;
+      }
+      .mnav i{ font-size:1.35rem; }
+      .mnav.active{ color:var(--star); }
+      body.theme-light .mnav.active{ color:var(--orange); }
+      body{ padding-bottom:calc(76px + env(safe-area-inset-bottom)); }
+      .tb-brand{ display:flex; }
+      .tb-title{ display:none; }
+      .topbar{ padding:10px 14px; }
+      .page-section{ padding:14px !important; }
+      #mainForm > .d-flex:last-child{
+        position:sticky; bottom:calc(78px + env(safe-area-inset-bottom)); z-index:40;
+        padding:10px 0 4px; margin-bottom:1rem !important;
+      }
+      #mainForm > .d-flex:last-child #btnSubmit{ box-shadow:0 8px 28px rgba(0,0,0,.45), 0 0 22px rgba(253,224,71,.4); }
+      button[title^="ตั้งค่าการเชื่อมต่อ (ใช้ได้"]{ bottom:calc(92px + env(safe-area-inset-bottom)) !important; right:12px !important; width:40px !important; height:40px !important; opacity:.8; }
+    }
+    body:not(.swal2-shown) button[title^="ตั้งค่าการเชื่อมต่อ (ใช้ได้"]{ display:none !important; }
+
+    /* ===== Desktop : sidebar ===== */
+    @media (min-width: 992px){
+      body{ padding-left:264px; padding-bottom:0 !important; }
+      .mobile-nav{ display:none !important; }
+      .sidebar{
+        display:flex; flex-direction:column; position:fixed; z-index:1040; top:0; left:0; bottom:0; width:264px;
+        padding:24px 16px 18px; background:var(--bg-2); border-right:1px solid var(--border-2);
+        box-shadow:12px 0 40px -24px rgba(139,92,246,.55);
+      }
+      .sb-brand{ display:flex; align-items:center; gap:12px; padding:2px 8px 22px; }
+      .sb-logo{ width:46px; height:46px; border-radius:15px; box-shadow:0 0 20px rgba(167,139,250,.55); }
+      .sb-name{ font-family:'Fredoka','Sarabun',sans-serif; font-weight:700; font-size:1.2rem; color:var(--text); line-height:1.15; }
+      .sb-name b{ color:var(--star); }
+      body.theme-light .sb-name b{ color:var(--orange); }
+      .sb-sub{ font-size:.7rem; color:var(--dim); margin-top:2px; }
+      .sb-label{ font-size:.7rem; font-weight:700; letter-spacing:1.2px; color:var(--dim); padding:10px 12px 8px; text-transform:uppercase; }
+      .sb-nav{ display:flex; flex-direction:column; gap:6px; }
+      .side-link{
+        display:flex; align-items:center; gap:13px; padding:13px 15px; border-radius:16px; cursor:pointer;
+        color:var(--muted); font-family:'Fredoka','Sarabun',sans-serif; font-weight:500; font-size:1rem;
+        border:1px solid transparent; transition:all .16s ease; text-decoration:none;
+      }
+      .side-link i{ font-size:1.2rem; }
+      .side-link:hover{ background:var(--surface-2); color:var(--text); }
+      .side-link.active{
+        background:var(--accent-soft); color:var(--text); border-color:var(--border-2);
+        box-shadow:0 0 18px rgba(167,139,250,.30);
+      }
+      .side-link.active i{ color:var(--star); }
+      body.theme-light .side-link.active i{ color:var(--orange); }
+      .sb-foot{ margin-top:auto; padding:14px 12px 0; font-size:.78rem; color:var(--dim); border-top:1px solid var(--border); }
+      .sb-foot b{ color:var(--orange); }
+      button[title^="ตั้งค่าการเชื่อมต่อ (ใช้ได้"]{ display:none !important; }
+      .sidebar, body{ transition:width .22s ease, padding-left .22s ease; }
+      .sb-toggle{ position:absolute; top:30px; right:-14px; width:28px; height:28px; border-radius:50%; border:1px solid var(--border-2); background:var(--surface-2); color:var(--text); display:flex; align-items:center; justify-content:center; font-size:.8rem; cursor:pointer; box-shadow:0 0 12px rgba(167,139,250,.4); }
+      .sb-toggle:hover{ background:var(--accent-soft); }
+      body.sb-collapsed{ padding-left:80px; }
+      body.sb-collapsed .sidebar{ width:80px; padding-left:10px; padding-right:10px; }
+      body.sb-collapsed .sb-brand > div, body.sb-collapsed .sb-label, body.sb-collapsed .side-link span, body.sb-collapsed .sb-foot{ display:none; }
+      body.sb-collapsed .sb-brand{ justify-content:center; padding:2px 0 22px; }
+      body.sb-collapsed .side-link{ justify-content:center; padding:13px 0; }
+      body.sb-collapsed .sb-toggle i{ transform:rotate(180deg); }
+    }
+    @media (max-width: 991.98px){ .sb-toggle{ display:none; } }
+
+    /* ===== Desktop wide : form in two columns ===== */
+    @media (min-width: 1200px){
+      #mainForm{ display:grid; grid-template-columns:340px minmax(0,1fr); gap:0 24px; align-items:start; }
+      #mainForm > .card:nth-child(1){ grid-column:1; grid-row:1 / span 2; position:sticky; top:96px; }
+      #mainForm > .card:nth-child(2){ grid-column:2; }
+      #mainForm > .d-flex:last-child{ grid-column:2; }
+      #mainForm > .card:nth-child(1) .card-body > *{ flex:0 0 100%; max-width:100%; width:100%; }
+    }
   </style>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fredoka:wght@500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<nav class="navbar navbar-expand sticky-top">
-  <div class="container main-container">
-    <span class="navbar-brand brand">
-      <span class="brand-logo" style="padding:0;overflow:hidden;background:transparent;box-shadow:0 10px 22px -10px rgba(255,140,0,.6)"><img src="icons/icon-192.png" alt="ASSET" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"></span>
-      <span class="brand-text">
-        <span>ASSET <b>System</b></span>
-        <span class="brand-ver">ระบบตรวจรับครุภัณฑ์ · v1.7.1</span>
-      </span>
-    </span>
-    <ul class="navbar-nav ms-auto flex-row gap-2 mt-2 mt-md-0 align-items-center">
-      <li class="nav-item desktop-nav"><a class="nav-link active" data-page="entry" onclick="showPage('entry', this)"><i class="bi bi-pencil-square"></i>เพิ่มใหม่</a></li>
-      <li class="nav-item desktop-nav"><a class="nav-link" data-page="import" onclick="showPage('import', this)"><i class="bi bi-file-earmark-excel"></i>นำเข้า PO</a></li>
-      <li class="nav-item desktop-nav"><a class="nav-link" data-page="history" onclick="showPage('history', this)"><i class="bi bi-clock-history"></i>ประวัติ</a></li>
-      <li class="nav-item"><a class="nav-link theme-toggle" onclick="openSettings()" title="ตั้งค่าการเชื่อมต่อฐานข้อมูล"><i class="bi bi-gear"></i></a></li>
-      <li class="nav-item"><a class="nav-link theme-toggle" onclick="toggleTheme()" title="สลับโหมดสี"><i class="bi bi-moon-stars" id="themeIcon"></i></a></li>
-      <li class="nav-item d-flex align-items-center"><span id="connDot" title="สถานะการเชื่อมต่อ" style="display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;color:var(--muted);padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.05)"><span id="connLed" style="width:9px;height:9px;border-radius:50%;background:#3ddc84;box-shadow:0 0 8px #3ddc84;transition:all .2s"></span><span id="connText" class="d-none d-md-inline">ออนไลน์</span></span></li>
-    </ul>
+<aside class="sidebar">
+  <div class="sb-brand">
+    <img class="sb-logo" src="icons/icon-192.png" alt="ASSET">
+    <div><div class="sb-name">ASSET <b>System</b></div><div class="sb-sub">ระบบตรวจรับครุภัณฑ์ · v1.7.1</div></div>
   </div>
-</nav>
+  <button type="button" class="sb-toggle" onclick="toggleSidebar()" title="ย่อ/ขยายเมนู"><i class="bi bi-chevron-double-left"></i></button>
+  <div class="sb-label">เมนูหลัก</div>
+  <nav class="sb-nav">
+    <a class="side-link active" data-page="entry" onclick="showPage('entry', this)"><i class="bi bi-pencil-square"></i><span>เพิ่มใหม่</span></a>
+    <a class="side-link" data-page="import" onclick="showPage('import', this)"><i class="bi bi-file-earmark-excel"></i><span>นำเข้า PO</span></a>
+    <a class="side-link" data-page="history" onclick="showPage('history', this)"><i class="bi bi-clock-history"></i><span>ประวัติ</span></a>
+    <a class="side-link" data-page="report" onclick="showPage('report', this)"><i class="bi bi-file-earmark-bar-graph"></i><span>รายงาน</span></a>
+  </nav>
+  <div class="sb-foot">พัฒนาโดย <b>SAWARiN</b></div>
+</aside>
+
+<header class="topbar">
+  <div class="tb-brand"><img src="icons/icon-192.png" alt="ASSET"><span>ASSET <b>System</b></span></div>
+  <div class="tb-title"><h1 id="tbTitle">บันทึกการตรวจรับ</h1><p id="tbSub">ค้นหาจากเลข PO แล้วกรอกรายการครุภัณฑ์</p></div>
+  <div class="tb-actions">
+    <span id="connDot" title="สถานะการเชื่อมต่อ" class="tb-conn"><span id="connLed" style="width:9px;height:9px;border-radius:50%;background:#4ADE80;box-shadow:0 0 8px #4ADE80;transition:all .2s"></span><span id="connText" class="d-none d-md-inline">ออนไลน์</span></span>
+    <button type="button" class="tb-btn" onclick="openSettings()" title="ตั้งค่าการเชื่อมต่อฐานข้อมูล"><i class="bi bi-gear"></i></button>
+    <button type="button" class="tb-btn" onclick="toggleTheme()" title="สลับโหมดสี"><i class="bi bi-moon-stars" id="themeIcon"></i></button>
+  </div>
+</header>
 
 <!-- แถบเมนูล่างสำหรับมือถือ -->
 <nav class="mobile-nav">
   <div class="mnav active" data-page="entry" onclick="showPage('entry', this)"><i class="bi bi-pencil-square"></i>เพิ่มใหม่</div>
   <div class="mnav" data-page="import" onclick="showPage('import', this)"><i class="bi bi-file-earmark-excel"></i>นำเข้า PO</div>
   <div class="mnav" data-page="history" onclick="showPage('history', this)"><i class="bi bi-clock-history"></i>ประวัติ</div>
+  <div class="mnav" data-page="report" onclick="showPage('report', this)"><i class="bi bi-file-earmark-bar-graph"></i>รายงาน</div>
 </nav>
 
 <!-- PAGE: บันทึกรายการ -->
@@ -431,7 +619,7 @@
           <span class="hd-ic"><i class="bi bi-box-seam"></i></span>
           <div class="hd-tt">รายการครุภัณฑ์ &amp; สถานที่จัดเก็บ<small>เพิ่มได้ไม่จำกัด · คัดลอกเป็นชุดได้</small></div>
         </div>
-        <button type="button" class="btn btn-sm btn-orange" onclick="addItem()"><i class="bi bi-plus-lg me-1"></i> เพิ่มรายการ</button>
+        <button type="button" class="btn btn-sm btn-orange" onclick="addItemFromLast()"><i class="bi bi-plus-lg me-1"></i> เพิ่มรายการ</button>
       </div>
       <div id="itemsContainer" class="card-body p-4"></div>
     </div>
@@ -447,12 +635,72 @@
   <div class="card">
     <div class="card-header">
       <span class="hd-ic"><i class="bi bi-file-earmark-spreadsheet"></i></span>
-      <div class="hd-tt">นำเข้าข้อมูล PO จาก Excel<small>คัดลอกจาก Excel แล้ววางในช่องด้านล่าง</small></div>
+      <div class="hd-tt">นำเข้าข้อมูล PO จากไฟล์ Excel<small>ใช้ไฟล์รูปแบบเดียวกับ “03.1 Goods Receipt PO” จาก SAP</small></div>
     </div>
     <div class="card-body">
-      <p class="text-muted mb-3"><i class="bi bi-info-circle me-1"></i> วิธีการ: คัดลอกข้อมูลจาก Excel แล้วนำมาวาง (Paste) ในช่องด้านล่าง แล้วกดบันทึก</p>
-      <textarea id="excelPasteArea" class="form-control mb-3" rows="10" placeholder="วางข้อมูล Excel ที่นี่..."></textarea>
-      <button type="button" class="btn btn-orange w-100" onclick="processExcelPaste()"><i class="bi bi-upload me-2"></i> บันทึกเข้าระบบ</button>
+      <div id="importStatus" class="p-3 mb-3" style="background:var(--accent-soft);border:1px solid var(--border-2);border-radius:14px;">
+        <div class="text-muted"><span class="spinner-border spinner-border-sm me-2"></span>กำลังตรวจสอบสถานะการนำเข้าล่าสุด...</div>
+      </div>
+      <div class="mb-3 text-muted" style="font-size:.88rem;line-height:1.8;">
+        <i class="bi bi-funnel me-1"></i> ระบบจะเก็บเฉพาะแถวที่ <b class="text-orange">Prefix String = GPO หรือ GPD</b> และ <b class="text-orange">Item No. ขึ้นต้นด้วย 8</b> เท่านั้น<br>
+        <i class="bi bi-arrow-repeat me-1"></i> นำเข้าต่อจากเดิม (ไม่ลบข้อมูลเก่า) แถวซ้ำ (Document Number + No.) จะถูกข้ามอัตโนมัติ
+      </div>
+      <label class="form-label">เลือกไฟล์ Excel (.xlsx)</label>
+      <input type="file" id="poFile" accept=".xlsx,.xls" class="form-control mb-3">
+      <div id="importProgress" class="text-muted mb-3" style="font-size:.88rem;"></div>
+      <button type="button" id="btnRead" class="btn btn-orange w-100" onclick="readPOFile()"><i class="bi bi-file-earmark-text me-2"></i> 1. อ่านไฟล์และแสดงตัวอย่างข้อมูล</button>
+      <div id="importPreview" class="d-none mt-4">
+        <div id="prevSummary" class="mb-3"></div>
+        <div class="table-responsive" style="max-height:420px;overflow:auto;border:1px solid var(--border-2);border-radius:12px;">
+          <table class="table table-sm mb-0" style="font-size:.82rem;white-space:nowrap;">
+            <thead style="position:sticky;top:0;background:var(--surface-2);z-index:1;"><tr>
+              <th>#</th><th>Prefix</th><th>Document No.</th><th>Posting Date</th><th>ผู้ขาย</th><th>Item No.</th><th>รายการ</th><th class="text-end">จำนวน</th><th>หน่วย</th><th class="text-end">ราคา/หน่วย</th>
+            </tr></thead>
+            <tbody id="prevBody"></tbody>
+          </table>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
+          <div class="text-muted" id="prevPageInfo" style="font-size:.82rem;"></div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-light" onclick="prevPage(-1)"><i class="bi bi-chevron-left"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-light" onclick="prevPage(1)"><i class="bi bi-chevron-right"></i></button>
+          </div>
+        </div>
+        <div class="d-flex gap-2 mt-3 flex-wrap">
+          <button type="button" id="btnImport" class="btn btn-orange flex-grow-1" onclick="commitPOImport()"><i class="bi bi-cloud-arrow-up me-2"></i> 2. ข้อมูลถูกต้อง — นำเข้าระบบ</button>
+          <button type="button" class="btn btn-outline-light" onclick="cancelPreview()"><i class="bi bi-x-lg me-1"></i> ยกเลิก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: รายงาน -->
+<div class="container main-container py-4 page-section d-none" id="reportPage">
+  <div class="card">
+    <div class="card-header hd-between flex-wrap">
+      <div class="hd-left">
+        <span class="hd-ic"><i class="bi bi-file-earmark-bar-graph"></i></span>
+        <div class="hd-tt">รายงาน Excel<small>ดึงตามตัวกรอง หรือดึงข้อมูลทั้งหมด</small></div>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-light" onclick="loadReportData(true)"><i class="bi bi-arrow-clockwise me-1"></i> รีเฟรชข้อมูล</button>
+    </div>
+    <div class="card-body row g-3">
+      <div class="col-md-3"><label class="form-label">วันที่ตรวจรับ (ตั้งแต่)</label><input type="date" id="rp_from" class="form-control" onchange="updateReportCount()"></div>
+      <div class="col-md-3"><label class="form-label">ถึงวันที่</label><input type="date" id="rp_to" class="form-control" onchange="updateReportCount()"></div>
+      <div class="col-md-3"><label class="form-label">เลขที่ PO</label><input type="text" id="rp_po" class="form-control" placeholder="บางส่วนก็ได้" oninput="updateReportCount()"></div>
+      <div class="col-md-3"><label class="form-label">เลขใบตรวจรับ</label><input type="text" id="rp_rec" class="form-control" oninput="updateReportCount()"></div>
+      <div class="col-md-4"><label class="form-label">บริษัทผู้ขาย</label><select id="rp_vendor" class="form-select" onchange="updateReportCount()"></select></div>
+      <div class="col-md-4"><label class="form-label">แผนกจัดเก็บ</label><select id="rp_dept" class="form-select" onchange="updateReportCount()"></select></div>
+      <div class="col-md-4"><label class="form-label">คำค้นหา</label><input type="search" id="rp_kw" class="form-control" placeholder="ชื่อ / รหัส / S/N / ยี่ห้อ / รุ่น" oninput="updateReportCount()"></div>
+      <div class="col-12">
+        <div id="rpCount" class="text-muted mb-3"><span class="spinner-border spinner-border-sm me-2"></span>กำลังโหลดข้อมูล...</div>
+        <div class="d-flex flex-wrap gap-2">
+          <button type="button" class="btn btn-orange" onclick="exportReport(true)"><i class="bi bi-funnel me-2"></i> ดาวน์โหลดตามตัวกรอง</button>
+          <button type="button" class="btn btn-outline-light" onclick="exportReport(false)"><i class="bi bi-download me-2"></i> ดาวน์โหลดทั้งหมด</button>
+          <button type="button" class="btn btn-outline-light" onclick="clearReportFilters()"><i class="bi bi-x-circle me-2"></i> ล้างตัวกรอง</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -472,6 +720,12 @@
           <option value="50" selected>50 บิลล่าสุด</option>
           <option value="100">100 บิลล่าสุด</option>
         </select>
+      </div>
+    </div>
+    <div class="px-3 pt-3 pb-1">
+      <div class="position-relative">
+        <i class="bi bi-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--dim);"></i>
+        <input type="search" id="historySearch" class="form-control" style="padding-left:40px;" placeholder="ค้นหาเลข PO / ใบตรวจรับ / บริษัท / ชื่อครุภัณฑ์ / รหัส / S/N" oninput="onHistorySearch(this.value)" autocomplete="off">
       </div>
     </div>
     <div class="card-body p-0">
@@ -734,7 +988,7 @@
             else if (onF) onF(String(err)); else console.error(err);
           });
       };
-      ['getInitialData','updatePOData','searchPO','saveFormData','getHistory','updateHistoryItem','deleteHistoryItem'].forEach(m => {
+      ['getInitialData','updatePOData','searchPO','saveFormData','getHistory','updateHistoryItem','deleteHistoryItem','importPORows','logPOImport','getImportStatus','getReportData'].forEach(m => {
         h[m] = function(){ call(m, [...arguments]); return h; };
       });
       return h;
@@ -754,8 +1008,12 @@
     Runner.prototype.getHistory=function(){ this._done({success:true, groups:SAMPLE_HISTORY}); };
     Runner.prototype.updateHistoryItem=function(g,i,itemData){ this._done({ success:true, message:'แก้ไขข้อมูลเรียบร้อยแล้ว (โหมดตัวอย่าง)', imageUrl: itemData && itemData.removeImage ? '' : (itemData && itemData.image ? itemData.image : undefined) }); };
     Runner.prototype.deleteHistoryItem=function(){ this._done({success:true, message:'ลบรายการเรียบร้อยแล้ว (โหมดตัวอย่าง)'}); };
+    Runner.prototype.importPORows=function(rows){ this._done({success:true, added:rows.length, skipped:0}, 300); };
+    Runner.prototype.logPOImport=function(){ this._done({success:true}, 200); };
+    Runner.prototype.getImportStatus=function(){ this._done({success:true, last:{at:'18/6/2569 09:11', file:'sample.xlsx'}, maxPosting:'2026-06-13', totalRows:1280, history:[{at:'18/6/2569 09:11', file:'sample.xlsx', added:320, min:'2026-06-01', max:'2026-06-13'}]}, 300); };
+    Runner.prototype.getReportData=function(){ const rows=[]; SAMPLE_HISTORY.forEach(g=>g.items.forEach(i=>rows.push([g.timestamp,g.po_no,g.po_date,g.receive_no,g.receive_date,g.vendor,i.assetId,i.itemName,i.unit,i.price,i.type,i.brand,i.model,i.sn,i.dept,i.floor,i.room,i.image]))); this._done({success:true, rows}, 300); };
     const run = {};
-    ['withSuccessHandler','withFailureHandler','getInitialData','updatePOData','searchPO','saveFormData','getHistory','updateHistoryItem','deleteHistoryItem'].forEach(m=>{
+    ['withSuccessHandler','withFailureHandler','getInitialData','updatePOData','searchPO','saveFormData','getHistory','updateHistoryItem','deleteHistoryItem','importPORows','logPOImport','getImportStatus','getReportData'].forEach(m=>{
       run[m] = function(){ const r = new Runner(); return r[m].apply(r, arguments); };
     });
     window.google = { script:{ run:run, host:{ close(){}, editor:{} } } };
@@ -827,10 +1085,14 @@
   function showPage(p, el) {
     $('.page-section').addClass('d-none');
     $(`#${p}Page`).removeClass('d-none');
-    $('.nav-link, .mnav').removeClass('active');
+    $('.nav-link, .mnav, .side-link').removeClass('active');
     $(`[data-page="${p}"]`).addClass('active');
+    const TT = { entry:['บันทึกการตรวจรับ','ค้นหาจากเลข PO แล้วกรอกรายการครุภัณฑ์'], import:['นำเข้าข้อมูล PO','วางข้อมูลจาก Excel เพื่ออัปเดตฐานข้อมูล PO'], history:['ประวัติการตรวจรับ','จัดกลุ่มตามใบตรวจรับ แก้ไข ลบ และพิมพ์เอกสาร'], report:['รายงาน Excel','ดึงข้อมูลตามตัวกรอง หรือดึงทั้งหมด'] };
+    $('#tbTitle').text(TT[p][0]); $('#tbSub').text(TT[p][1]);
     window.scrollTo(0, 0);
     if(p === 'history') loadHistory();
+    if(p === 'import') loadImportStatus();
+    if(p === 'report') loadReportData(false);
   }
 
   function renderOptions(id, list) {
@@ -855,17 +1117,179 @@
     window.scrollTo(0, 0);
   }
 
-  function processExcelPaste() {
-    const raw = $('#excelPasteArea').val();
-    if(!raw.trim()) return Swal.fire('แจ้งเตือน', 'กรุณาวางข้อมูลก่อน', 'warning');
-    Swal.fire({ title: 'กำลังประมวลผล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-    const rows = raw.trim().split('\n');
-    const dataArray = rows.map(r => r.split('\t'));
+  const runP = (fn, ...args) => new Promise((ok, ng) => { google.script.run.withSuccessHandler(ok).withFailureHandler(ng)[fn](...args); });
+  const PO_COLS = 36;
+  function loadXLSX(){
+    return new Promise((ok, ng) => {
+      if (window.XLSX) return ok();
+      const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+      s.onload = ok; s.onerror = () => ng(new Error('โหลดตัวอ่าน Excel ไม่สำเร็จ (ตรวจสอบอินเทอร์เน็ต)')); document.head.appendChild(s);
+    });
+  }
+  function parseAnyDate(v){
+    if (v instanceof Date) return isNaN(v) ? null : v;
+    const s = String(v||'').trim(); if(!s) return null;
+    let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/), d, mo, y;
+    if (m){ y=+m[1]; mo=+m[2]; d=+m[3]; }
+    else { m = s.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2,4})/); if(!m) return null; d=+m[1]; mo=+m[2]; y=+m[3]; }
+    if (y < 100) y += 2000; if (y > 2400) y -= 543;
+    const dt = new Date(y, mo-1, d); return isNaN(dt) || dt.getMonth() !== mo-1 ? null : dt;
+  }
+  const iso = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const thDate = s => { const d = parseAnyDate(s); return d ? d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'}) : (s||'-'); };
 
-    google.script.run.withSuccessHandler(res => {
-      if(res.success) { Swal.fire('สำเร็จ', res.message, 'success'); $('#excelPasteArea').val(''); }
-      else { Swal.fire('Error', res.message, 'error'); }
-    }).updatePOData(dataArray);
+  async function loadImportStatus(){
+    const box = $('#importStatus');
+    try {
+      const r = await runP('getImportStatus');
+      window.__lastPosting = r && r.maxPosting ? r.maxPosting : '';
+      if (!r || !r.success || !r.last) {
+        box.html('<div><i class="bi bi-exclamation-circle text-warning me-2"></i><b>ยังไม่เคยนำเข้าไฟล์</b> — เริ่มนำเข้าจากข้อมูลรอบแรก</div>'); return;
+      }
+      const hist = (r.history||[]).slice().reverse().map(x => '<div class="text-muted" style="font-size:.8rem;">'+x.at+' · '+x.file+' · เพิ่ม '+x.added+' แถว · Posting '+thDate(x.min)+' – '+thDate(x.max)+'</div>').join('');
+      box.html('<div class="d-flex flex-wrap gap-3 align-items-center justify-content-between">'
+        + '<div><div class="text-muted" style="font-size:.8rem;">Posting Date ล่าสุดที่นำเข้า</div><div style="font-size:1.5rem;font-weight:700;color:var(--star,var(--orange));">'+thDate(r.maxPosting)+'</div>'
+        + '<div class="text-muted" style="font-size:.82rem;">เจ้าหน้าที่ควรดึงไฟล์จาก SAP ต่อจากวันนี้</div></div>'
+        + '<div class="text-end"><div class="text-muted" style="font-size:.8rem;">อัปโหลดล่าสุด</div><div><b>'+r.last.at+'</b></div><div class="text-muted" style="font-size:.82rem;">ข้อมูล PO ในระบบ '+Number(r.totalRows||0).toLocaleString()+' แถว</div></div></div>'
+        + (hist ? '<hr style="border-color:var(--border-2);margin:12px 0 8px;">'+hist : ''));
+    } catch(e){ box.html('<div class="text-warning"><i class="bi bi-wifi-off me-2"></i>โหลดสถานะไม่สำเร็จ</div>'); }
+  }
+
+  let poParsed = null, prevPg = 0;
+  const PREV_SIZE = 50;
+  function cancelPreview(){ poParsed = null; $('#importPreview').addClass('d-none'); $('#importProgress').html(''); }
+
+  async function readPOFile(){
+    const f = $('#poFile')[0].files[0];
+    if(!f) return Swal.fire('แจ้งเตือน','กรุณาเลือกไฟล์ Excel ก่อน','warning');
+    const prog = $('#importProgress'), btn = $('#btnRead');
+    btn.prop('disabled', true); cancelPreview();
+    try {
+      prog.html('<span class="spinner-border spinner-border-sm me-2"></span>กำลังโหลดตัวอ่านไฟล์...');
+      await loadXLSX();
+      prog.html('<span class="spinner-border spinner-border-sm me-2"></span>กำลังอ่านไฟล์ ('+(f.size/1048576).toFixed(1)+' MB) อาจใช้เวลาสักครู่ อย่าปิดหน้านี้...');
+      await new Promise(r => setTimeout(r, 60));
+      const buf = await f.arrayBuffer();
+      const wb = XLSX.read(buf, { type:'array', dense:true });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      prog.html('<span class="spinner-border spinner-border-sm me-2"></span>กำลังคัดกรองข้อมูล...');
+      await new Promise(r => setTimeout(r, 30));
+      const all = XLSX.utils.sheet_to_json(ws, { header:1, raw:false, defval:'' });
+      if (all.length < 2) throw new Error('ไม่พบข้อมูลในไฟล์');
+      const header = all[0].map(x => String(x).trim());
+      const ix = n => header.indexOf(n);
+      const cPrefix = ix('Prefix String'), cItem = ix('Item No.'), cDoc = ix('Document Number'), cPost = ix('Posting Date');
+      if ([cPrefix,cItem,cDoc,cPost].some(i => i < 0)) throw new Error('หัวคอลัมน์ไม่ตรงกับเทมเพลต (ต้องมี Prefix String, Document Number, Posting Date, Item No.)');
+      const kept = []; let minD = null, maxD = null;
+      for (let i = 1; i < all.length; i++) {
+        const r = all[i];
+        const pf = String(r[cPrefix]||'').trim().toUpperCase();
+        if (pf !== 'GPO' && pf !== 'GPD') continue;
+        if (!String(r[cItem]||'').trim().startsWith('8')) continue;
+        const row = new Array(PO_COLS).fill(''); for (let c = 0; c < PO_COLS; c++) row[c] = r[c] == null ? '' : String(r[c]).trim();
+        kept.push(row);
+        const d = parseAnyDate(r[cPost]); if (d) { if (!minD || d < minD) minD = d; if (!maxD || d > maxD) maxD = d; }
+      }
+      prog.html('');
+      if (!kept.length) { btn.prop('disabled', false); return Swal.fire('ไม่พบข้อมูลที่เข้าเงื่อนไข','ไม่มีแถวที่ Prefix เป็น GPO/GPD และ Item No. ขึ้นต้นด้วย 8','info'); }
+      poParsed = { file:f.name, read:all.length-1, kept, header:header.slice(0, PO_COLS), min:minD?iso(minD):'', max:maxD?iso(maxD):'' };
+      let warn = '';
+      const prev = window.__lastPosting ? parseAnyDate(window.__lastPosting) : null;
+      if (prev && minD) {
+        if (maxD <= prev) warn = '<div class="mt-2" style="color:#FBBF24;"><i class="bi bi-exclamation-triangle me-1"></i>ข้อมูลทั้งหมดในไฟล์เก่ากว่าหรือเท่ากับที่นำเข้าล่าสุด ('+thDate(iso(prev))+')</div>';
+        else if ((minD - prev) / 86400000 > 1) warn = '<div class="mt-2" style="color:#FBBF24;"><i class="bi bi-exclamation-triangle me-1"></i>ไฟล์เริ่มที่ '+thDate(iso(minD))+' แต่ครั้งก่อนถึง '+thDate(iso(prev))+' อาจมีช่วงวันที่ขาดหาย</div>';
+      }
+      $('#prevSummary').html('<div class="p-3" style="background:var(--accent-soft);border:1px solid var(--border-2);border-radius:14px;line-height:1.9;">'
+        + '<i class="bi bi-file-earmark-excel me-1"></i> <b>'+f.name+'</b><br>อ่านทั้งหมด <b>'+(all.length-1).toLocaleString()+'</b> แถว · เข้าเงื่อนไข (GPO/GPD · Item 8xxx) <b class="text-orange">'+kept.length.toLocaleString()+'</b> แถว<br>Posting Date: <b>'+thDate(poParsed.min)+' – '+thDate(poParsed.max)+'</b>'+warn+'</div>');
+      prevPg = 0; renderPrev(); $('#importPreview').removeClass('d-none');
+    } catch(err){
+      prog.html(''); Swal.fire('เกิดข้อผิดพลาด', String(err && err.message || err), 'error');
+    }
+    btn.prop('disabled', false);
+  }
+
+  function renderPrev(){
+    const k = poParsed.kept, st = prevPg * PREV_SIZE, rows = k.slice(st, st + PREV_SIZE);
+    const esc = v => String(v==null?'':v).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    $('#prevBody').html(rows.map((r,i) => '<tr><td>'+(st+i+1)+'</td><td>'+esc(r[2])+'</td><td>'+esc(r[3])+'</td><td>'+esc(r[6])+'</td><td>'+esc(r[10])+'</td><td>'+esc(r[15])+'</td><td style="white-space:normal;min-width:220px;">'+esc(r[16])+'</td><td class="text-end">'+esc(r[17])+'</td><td>'+esc(r[19])+'</td><td class="text-end">'+esc(r[21])+'</td></tr>').join(''));
+    $('#prevPageInfo').text('แสดง '+(st+1).toLocaleString()+'–'+(st+rows.length).toLocaleString()+' จาก '+k.length.toLocaleString()+' แถว');
+  }
+  function prevPage(d){ if(!poParsed) return; const max = Math.ceil(poParsed.kept.length / PREV_SIZE) - 1; prevPg = Math.min(max, Math.max(0, prevPg + d)); renderPrev(); }
+
+  async function commitPOImport(){
+    if (!poParsed) return;
+    const prog = $('#importProgress'), btn = $('#btnImport'), p = poParsed;
+    btn.prop('disabled', true);
+    try {
+      const CH = 1500; let added = 0, skipped = 0;
+      for (let i = 0; i < p.kept.length; i += CH) {
+        prog.html('<span class="spinner-border spinner-border-sm me-2"></span>กำลังบันทึก '+Math.min(i+CH,p.kept.length).toLocaleString()+' / '+p.kept.length.toLocaleString()+' แถว');
+        const res = await runP('importPORows', p.kept.slice(i, i+CH), p.header);
+        if (!res || !res.success) throw new Error((res && res.message) || 'บันทึกไม่สำเร็จ');
+        added += res.added; skipped += res.skipped;
+      }
+      await runP('logPOImport', { file:p.file, read:p.read, kept:p.kept.length, added, skipped, min:p.min, max:p.max });
+      cancelPreview(); $('#poFile').val('');
+      await Swal.fire('นำเข้าสำเร็จ','เพิ่มใหม่ '+added.toLocaleString()+' แถว · ข้ามแถวซ้ำ '+skipped.toLocaleString()+' แถว','success');
+      loadImportStatus();
+    } catch(err){
+      prog.html(''); Swal.fire('เกิดข้อผิดพลาด', String(err && err.message || err), 'error');
+    }
+    btn.prop('disabled', false);
+  }
+
+  // ===== รายงาน =====
+  let reportRows = null;
+  const RP_HEAD = ['วันที่บันทึกเข้าระบบ','เลขที่ PO','วันที่ซื้อ','เลขใบตรวจรับ','วันที่ตรวจรับ','บริษัทผู้ขาย','หมายเลขครุภัณฑ์','ชื่อรายการ','หน่วยนับ','ราคา','ประเภท','ยี่ห้อ','รุ่น','S/N','แผนกจัดเก็บ','ชั้น','ห้อง','รูปภาพ'];
+  async function loadReportData(force){
+    fillReportSelects();
+    if (reportRows && !force) return updateReportCount();
+    $('#rpCount').html('<span class="spinner-border spinner-border-sm me-2"></span>กำลังโหลดข้อมูล...');
+    try {
+      const r = await runP('getReportData');
+      if (!r || !r.success) throw new Error((r && r.message) || 'โหลดข้อมูลไม่สำเร็จ');
+      reportRows = r.rows; updateReportCount();
+    } catch(e){ $('#rpCount').html('<span class="text-warning"><i class="bi bi-wifi-off me-1"></i>'+String(e.message||e)+'</span>'); }
+  }
+  function fillReportSelects(){
+    if (!db) return;
+    const f = (id, list) => { const el = $(id); if (el.children().length > 1) return; el.html('<option value="">ทั้งหมด</option>' + list.map(x => '<option>'+x+'</option>').join('')); };
+    f('#rp_vendor', db.vendors); f('#rp_dept', db.depts);
+  }
+  function filteredReport(){
+    if (!reportRows) return [];
+    const from = $('#rp_from').val() ? new Date($('#rp_from').val()+'T00:00:00') : null;
+    const to = $('#rp_to').val() ? new Date($('#rp_to').val()+'T23:59:59') : null;
+    const po = $('#rp_po').val().trim().toLowerCase(), rec = $('#rp_rec').val().trim().toLowerCase();
+    const ve = $('#rp_vendor').val(), de = $('#rp_dept').val(), kw = $('#rp_kw').val().trim().toLowerCase();
+    return reportRows.filter(r => {
+      if (from || to) { const d = parseAnyDate(r[4]); if (!d || (from && d < from) || (to && d > to)) return false; }
+      if (po && !String(r[1]).toLowerCase().includes(po)) return false;
+      if (rec && !String(r[3]).toLowerCase().includes(rec)) return false;
+      if (ve && r[5] !== ve) return false;
+      if (de && r[14] !== de) return false;
+      if (kw && ![6,7,10,11,12,13].some(i => String(r[i]).toLowerCase().includes(kw))) return false;
+      return true;
+    });
+  }
+  function updateReportCount(){
+    if (!reportRows) return;
+    const n = filteredReport().length;
+    $('#rpCount').html('<i class="bi bi-table me-1"></i> ตรงตามตัวกรอง <b class="text-orange">'+n.toLocaleString()+'</b> จากทั้งหมด '+reportRows.length.toLocaleString()+' รายการ');
+  }
+  function clearReportFilters(){ $('#rp_from,#rp_to,#rp_po,#rp_rec,#rp_kw').val(''); $('#rp_vendor,#rp_dept').val(''); updateReportCount(); }
+  async function exportReport(useFilter){
+    if (!reportRows) return Swal.fire('แจ้งเตือน','ยังโหลดข้อมูลไม่เสร็จ','warning');
+    const rows = useFilter ? filteredReport() : reportRows;
+    if (!rows.length) return Swal.fire('ไม่พบข้อมูล','ไม่มีรายการตรงตามตัวกรอง','info');
+    try {
+      await loadXLSX();
+      const ws = XLSX.utils.aoa_to_sheet([RP_HEAD].concat(rows));
+      ws['!cols'] = [22,16,12,14,12,30,18,34,8,10,16,14,14,18,20,6,16,40].map(w => ({ wch:w }));
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'รายงานตรวจรับ');
+      XLSX.writeFile(wb, 'รายงานตรวจรับ_'+(useFilter?'ตามตัวกรอง':'ทั้งหมด')+'_'+iso(new Date())+'.xlsx');
+      Swal.fire({ toast:true, position:'top-end', icon:'success', title:'ดาวน์โหลด '+rows.length.toLocaleString()+' รายการ', showConfirmButton:false, timer:2200 });
+    } catch(e){ Swal.fire('Error', String(e.message||e), 'error'); }
   }
 
   function handleSearchPO() {
@@ -933,7 +1357,7 @@
              <button type="button" class="btn btn-sm btn-orange" onclick="massDuplicateItem(${id})">
                <i class="bi bi-files"></i> คัดลอกแบบกลุ่ม
              </button>
-             <small>*เว้นว่างหมายเลข/SN</small>
+             <small>*ใช้หมายเลขเดียวกัน · เว้นว่าง SN</small>
           </div>
           <div class="d-flex gap-2">
              <button type="button" class="btn btn-sm btn-outline-info" onclick="duplicateItem(${id})"><i class="bi bi-file-plus"></i> คัดลอก 1 แถว</button>
@@ -978,7 +1402,7 @@
     if(cloneCount > 100) return Swal.fire('แจ้งเตือน', 'ไม่สามารถคัดลอกเกิน 100 รายการต่อครั้งได้', 'warning');
 
     for (let i = 0; i < cloneCount; i++) {
-      addItem({ assetId: '', itemName: srcRow.find('.itemName').val(), unit: srcRow.find('.unit').val(), price: srcRow.find('.price').val() });
+      addItem({ assetId: srcRow.find('.s2-asset').val() || '', itemName: srcRow.find('.itemName').val(), unit: srcRow.find('.unit').val(), price: srcRow.find('.price').val() });
       const newRow = $('.item-row').last();
       newRow.find('.s2-type').val(srcRow.find('.s2-type').val()).trigger('change');
       newRow.find('.brand').val(srcRow.find('.brand').val());
@@ -994,7 +1418,7 @@
 
   function duplicateItem(sourceId) {
     const srcRow = $(`#row_${sourceId}`);
-    addItem({ assetId: '', itemName: srcRow.find('.itemName').val(), unit: srcRow.find('.unit').val(), price: srcRow.find('.price').val() });
+    addItem({ assetId: srcRow.find('.s2-asset').val() || '', itemName: srcRow.find('.itemName').val(), unit: srcRow.find('.unit').val(), price: srcRow.find('.price').val() });
     const newRow = $('.item-row').last();
     newRow.find('.s2-type').val(srcRow.find('.s2-type').val()).trigger('change');
     newRow.find('.brand').val(srcRow.find('.brand').val());
@@ -1003,6 +1427,13 @@
     newRow.find('.s2-dept').val(srcRow.find('.s2-dept').val()).trigger('change');
     newRow.find('.s2-floor').val(srcRow.find('.s2-floor').val()).trigger('change');
     newRow.find('.s2-room').val(srcRow.find('.s2-room').val()).trigger('change');
+  }
+
+  function addItemFromLast() {
+    const last = $('.item-row').last();
+    if (!last.length) return addItem();
+    duplicateItem(last.attr('id').replace('row_', ''));
+    $('.item-row').last().find('.sn').val('');
   }
 
   function removeItem(id) { $(`#row_${id}`).remove(); updateItemNumbers(); }
@@ -1107,17 +1538,46 @@
     }).getHistory(limit);
   }
 
+  function toggleSidebar(){
+    const c = document.body.classList.toggle('sb-collapsed');
+    try{ localStorage.setItem('assetSbCollapsed', c ? '1' : '0'); }catch(e){}
+  }
+  try{ if(localStorage.getItem('assetSbCollapsed') === '1') document.body.classList.add('sb-collapsed'); }catch(e){}
+
+  function setPageSize(size, margin){
+    let s = document.getElementById('dynPageStyle');
+    if(!s){ s = document.createElement('style'); s.id = 'dynPageStyle'; document.head.appendChild(s); }
+    s.textContent = '@page{ size:' + size + '; margin:' + margin + '; }';
+  }
+
+  // ค้นหาในประวัติ
+  let historyQuery = '';
+  function onHistorySearch(v){ historyQuery = (v||'').trim().toLowerCase(); historyPageIndex = 0; renderHistoryTable(); }
+  function groupMatches(g){
+    if(!historyQuery) return true;
+    const hay = [g.po_no, g.receive_no, g.vendor, g.timestamp, g.receive_date]
+      .concat((g.items||[]).map(it => [it.itemName, it.assetId, it.sn, it.brand, it.model, it.dept, it.room].join(' '))).join(' ').toLowerCase();
+  return hay.includes(historyQuery);
+  }
+
   function renderHistoryTable() {
-    const total = currentHistoryData.length;
+    const filtered = [];
+    currentHistoryData.forEach((g, idx) => { if(groupMatches(g)) filtered.push({g, idx}); });
+    if(filtered.length === 0){
+      $('#historyBody').html('<tr><td colspan="6" class="text-center py-4 text-muted">ไม่พบเอกสารที่ค้นหา</td></tr>');
+      $('#historyCards').html('<div class="text-center py-4 text-muted">ไม่พบเอกสารที่ค้นหา</div>');
+      $('#historyPageInfo').text('0 รายการ'); $('#historyPagination').empty(); return;
+    }
+    const total = filtered.length;
     const totalPages = Math.max(1, Math.ceil(total / HISTORY_PAGE_SIZE));
     if (historyPageIndex >= totalPages) historyPageIndex = totalPages - 1;
     const start = historyPageIndex * HISTORY_PAGE_SIZE;
-    const pageItems = currentHistoryData.slice(start, start + HISTORY_PAGE_SIZE);
+    const pageItems = filtered.slice(start, start + HISTORY_PAGE_SIZE);
 
     let tb = '';
     let cards = '';
-    pageItems.forEach((group, i) => {
-      const index = start + i; // ดัชนีจริงใน currentHistoryData
+    pageItems.forEach((entry) => {
+      const group = entry.g, index = entry.idx;
       tb += `
         <tr class="history-row" onclick="openDetailsModal(${index})">
           <td>${group.timestamp}</td>
@@ -1434,6 +1894,7 @@
     $('#p_items_body').html(prs);
 
     $('body').removeClass('mode-single').addClass('mode-summary');
+    setPageSize('A4 landscape', '10mm');
     setTimeout(() => { window.print(); }, 300);
   }
 
@@ -1468,7 +1929,8 @@
     }
 
     $('body').removeClass('mode-summary').addClass('mode-single');
-    setTimeout(() => { window.print(); }, 500);
+    setPageSize('A4 portrait', '12mm');
+    setTimeout(() => { window.print(); }, 700);
   }
 </script>
 
