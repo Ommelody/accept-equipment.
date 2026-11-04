@@ -57,7 +57,11 @@ const API = {
   saveFormData: saveFormData,
   getHistory: getHistory,
   updateHistoryItem: updateHistoryItem,
-  deleteHistoryItem: deleteHistoryItem
+  deleteHistoryItem: deleteHistoryItem,
+  importPORows: importPORows,
+  logPOImport: logPOImport,
+  getImportStatus: getImportStatus,
+  getReportData: getReportData
 };
 
 // ===== Logic (เชื่อมฐานข้อมูลเดิม) =====
@@ -98,6 +102,91 @@ function updatePOData(dataArray) {
       poSheet.getRange(1, 1, dataArray.length, dataArray[0].length).setValues(dataArray);
     }
     return { success: true, message: 'อัปเดตข้อมูล PO เรียบร้อยแล้ว' };
+  } catch (e) {
+    return { success: false, message: e.toString() };
+  }
+}
+
+// นำเข้า PO แบบต่อท้าย (ข้ามแถวซ้ำ: Document Number + No.) — ข้อมูลเก็บเป็นข้อความเพื่อคงรูปแบบวันที่/รหัส
+function importPORows(rows, header) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(30000);
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sh = ss.getSheetByName('Data_PO');
+    if (!sh) sh = ss.insertSheet('Data_PO');
+    let last = sh.getLastRow();
+    const W = 36;
+    if (last === 0 && header && header.length) {
+      sh.getRange(1, 1, 1, W).setNumberFormat('@').setValues([header.concat(new Array(W).fill('')).slice(0, W)]);
+      last = 1;
+    }
+    const seen = {};
+    if (last >= 1) {
+      const d = sh.getRange(1, 4, last, 1).getDisplayValues();
+      const n = sh.getRange(1, 15, last, 1).getDisplayValues();
+      for (let i = 0; i < last; i++) seen[d[i][0] + '|' + n[i][0]] = 1;
+    }
+    const add = []; let skipped = 0;
+    rows.forEach(function (r) {
+      const k = r[3] + '|' + r[14];
+      if (seen[k]) { skipped++; return; }
+      seen[k] = 1;
+      add.push(r.concat(new Array(W).fill('')).slice(0, W).map(String));
+    });
+    if (add.length) {
+      sh.getRange(last + 1, 1, add.length, W).setNumberFormat('@').setValues(add);
+    }
+    return { success: true, added: add.length, skipped: skipped };
+  } catch (e) {
+    return { success: false, message: e.toString() };
+  } finally {
+    try { lock.releaseLock(); } catch (x) {}
+  }
+}
+
+// บันทึกประวัติการอัปโหลด (วัน/เวลา, ไฟล์, ช่วง Posting Date)
+function logPOImport(info) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sh = ss.getSheetByName('Import_Log');
+    if (!sh) {
+      sh = ss.insertSheet('Import_Log');
+      sh.getRange(1, 1, 1, 8).setValues([['เวลาอัปโหลด', 'ไฟล์', 'อ่านทั้งหมด', 'เข้าเงื่อนไข', 'เพิ่มใหม่', 'ข้ามซ้ำ', 'Posting เริ่ม', 'Posting ล่าสุด']]);
+    }
+    const at = Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy HH:mm');
+    const r = sh.getLastRow() + 1;
+    sh.getRange(r, 1, 1, 8).setNumberFormat('@').setValues([[at, info.file, info.read, info.kept, info.added, info.skipped, info.min, info.max]]);
+    return { success: true };
+  } catch (e) {
+    return { success: false, message: e.toString() };
+  }
+}
+
+function getImportStatus() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sh = ss.getSheetByName('Import_Log');
+    const po = ss.getSheetByName('Data_PO');
+    const totalRows = po ? Math.max(0, po.getLastRow() - 1) : 0;
+    if (!sh || sh.getLastRow() < 2) return { success: true, last: null, totalRows: totalRows };
+    const data = sh.getRange(2, 1, sh.getLastRow() - 1, 8).getDisplayValues();
+    let maxPosting = '';
+    data.forEach(function (r) { if (r[7] && r[7] > maxPosting) maxPosting = r[7]; });
+    const hist = data.slice(-5).map(function (r) { return { at: r[0], file: r[1], added: r[4], min: r[6], max: r[7] }; });
+    return { success: true, last: { at: data[data.length - 1][0], file: data[data.length - 1][1] }, maxPosting: maxPosting, totalRows: totalRows, history: hist };
+  } catch (e) {
+    return { success: false, message: e.toString() };
+  }
+}
+
+function getReportData() {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Data_Log');
+    if (!sheet) return { success: false, message: 'ไม่พบชีท Data_Log' };
+    const data = sheet.getDataRange().getDisplayValues();
+    data.shift();
+    return { success: true, rows: data.filter(function (r) { return r[0] !== '' || r[1] !== ''; }).map(function (r) { return r.slice(0, 18); }) };
   } catch (e) {
     return { success: false, message: e.toString() };
   }
