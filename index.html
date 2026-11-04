@@ -1301,7 +1301,11 @@
       if(res.success) {
         $('#po_date').val(res.poDate); $('#vendor').val(res.vendor).trigger('change');
         $('#itemsContainer').empty();
-        res.items.forEach(item => addItem(item));
+        res.items.forEach(item => {
+          const n = Math.floor(parseFloat(String(item.qty).replace(/,/g,''))) || 1;
+          const cnt = Math.min(Math.max(n, 1), 200);
+          for (let k = 1; k <= cnt; k++) addItem(Object.assign({}, item, { seq: cnt > 1 ? k : 0, total: cnt }));
+        });
         Swal.close();
       } else {
         Swal.fire({ icon: 'error', title: 'ไม่พบข้อมูล', text: res.message });
@@ -1320,7 +1324,7 @@
 
     let qtyBadge = '';
     if(prefill && prefill.qty) {
-      qtyBadge = `<span class="badge bg-primary ms-2">จำนวนตาม PO: ${prefill.qty} ${prefill.unit || ''}</span>`;
+      qtyBadge = `<span class="badge bg-primary ms-2">จำนวนตาม PO: ${prefill.qty} ${prefill.unit || ''}${prefill.seq ? ' · ชิ้นที่ ' + prefill.seq + '/' + prefill.total : ''}</span>`;
     }
 
     const html = `
@@ -1379,6 +1383,11 @@
       row.find('.itemName').val(prefill.itemName);
       row.find('.unit').val(prefill.unit);
       row.find('.price').val(prefill.price);
+      if (prefill.dept) {
+        const ds = row.find('.s2-dept');
+        if (!ds.find('option').filter(function(){ return this.value === prefill.dept; }).length) ds.append(new Option(prefill.dept, prefill.dept, true, true));
+        ds.val(prefill.dept).trigger('change');
+      }
     }
     updateItemNumbers();
   }
