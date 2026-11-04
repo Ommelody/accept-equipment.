@@ -638,7 +638,7 @@
       <div class="hd-tt">นำเข้าข้อมูล PO จากไฟล์ Excel<small>ใช้ไฟล์รูปแบบเดียวกับ “03.1 Goods Receipt PO” จาก SAP</small></div>
     </div>
     <div class="card-body">
-      <div id="importStatus" class="p-3 mb-3" style="background:var(--accent-soft);border:1px solid var(--border-2);border-radius:14px;">
+      <div id="importStatus" class="p-3 mb-3" style="color:var(--text);background:var(--accent-soft);border:1px solid var(--border-2);border-radius:14px;">
         <div class="text-muted"><span class="spinner-border spinner-border-sm me-2"></span>กำลังตรวจสอบสถานะการนำเข้าล่าสุด...</div>
       </div>
       <div class="mb-3 text-muted" style="font-size:.88rem;line-height:1.8;">
@@ -649,7 +649,7 @@
       <input type="file" id="poFile" accept=".xlsx,.xls" class="form-control mb-3">
       <div id="importProgress" class="text-muted mb-3" style="font-size:.88rem;"></div>
       <button type="button" id="btnRead" class="btn btn-orange w-100" onclick="readPOFile()"><i class="bi bi-file-earmark-text me-2"></i> 1. อ่านไฟล์และแสดงตัวอย่างข้อมูล</button>
-      <div id="importPreview" class="d-none mt-4">
+      <div id="importPreview" class="d-none mt-4" style="color:var(--text);">
         <div id="prevSummary" class="mb-3"></div>
         <div class="table-responsive" style="max-height:420px;overflow:auto;border:1px solid var(--border-2);border-radius:12px;">
           <table class="table table-sm mb-0" style="font-size:.82rem;white-space:nowrap;">
@@ -1199,7 +1199,7 @@
         if (maxD <= prev) warn = '<div class="mt-2" style="color:#FBBF24;"><i class="bi bi-exclamation-triangle me-1"></i>ข้อมูลทั้งหมดในไฟล์เก่ากว่าหรือเท่ากับที่นำเข้าล่าสุด ('+thDate(iso(prev))+')</div>';
         else if ((minD - prev) / 86400000 > 1) warn = '<div class="mt-2" style="color:#FBBF24;"><i class="bi bi-exclamation-triangle me-1"></i>ไฟล์เริ่มที่ '+thDate(iso(minD))+' แต่ครั้งก่อนถึง '+thDate(iso(prev))+' อาจมีช่วงวันที่ขาดหาย</div>';
       }
-      $('#prevSummary').html('<div class="p-3" style="background:var(--accent-soft);border:1px solid var(--border-2);border-radius:14px;line-height:1.9;">'
+      $('#prevSummary').html('<div class="p-3" style="background:var(--accent-soft);border:1px solid var(--border-2);border-radius:14px;line-height:1.9;color:var(--text);">'
         + '<i class="bi bi-file-earmark-excel me-1"></i> <b>'+f.name+'</b><br>อ่านทั้งหมด <b>'+(all.length-1).toLocaleString()+'</b> แถว · เข้าเงื่อนไข (GPO/GPD · Item 8xxx) <b class="text-orange">'+kept.length.toLocaleString()+'</b> แถว<br>Posting Date: <b>'+thDate(poParsed.min)+' – '+thDate(poParsed.max)+'</b>'+warn+'</div>');
       prevPg = 0; renderPrev(); $('#importPreview').removeClass('d-none');
     } catch(err){
