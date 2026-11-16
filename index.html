@@ -347,6 +347,7 @@
 
     /* ซ่อนส่วน Print จากหน้าเว็บปกติ */
     #printSectionSummary, #printSectionSingle{ display:none; }
+    .print-letterhead{ display:block; width:100%; height:auto; margin:0 0 6px; }
 
     /* CSS สำหรับการพิมพ์ (Print) — คงเดิมเพื่อให้เอกสารกระดาษถูกต้อง */
     @media print {
@@ -372,6 +373,26 @@
       .print-img-box{ height:300px; text-align:center; vertical-align:middle; padding:6px; }
       .print-img-box img{ max-width:100%; max-height:285px; object-fit:contain; }
       .print-label{ width:25%; font-weight:bold; background-color:#f9f9f9 !important; -webkit-print-color-adjust:exact; }
+
+      /* ปรับเลย์เอาต์ใบพิมพ์ให้สมดุล */
+      .print-letterhead{ display:block; width:100% !important; max-width:100% !important; height:auto; margin:0 0 8px; }
+      body.sum-landscape #printSectionSummary .print-letterhead{ display:none !important; }
+      #printSectionSingle > :not(.print-letterhead), #printSectionSummary > :not(.print-letterhead){ margin-left:3.7%; margin-right:3.7%; }
+      #printSectionSingle > table, #printSectionSummary > table{ width:92.6% !important; }
+      body.sum-landscape #printSectionSummary > :not(.print-letterhead){ margin-left:0; margin-right:0; }
+      body.sum-landscape #printSectionSummary > table{ width:100% !important; }
+      body.mode-single .print-title-single{ font-size:16pt; margin:6px 3.7% 10px; }
+      body.mode-single .print-subtitle{ font-size:12pt; margin-bottom:10px; }
+      body.mode-single .print-table-single{ font-size:11.5pt; table-layout:fixed; }
+      body.mode-single .print-table-single th, body.mode-single .print-table-single td{ padding:8px 10px; line-height:1.45; }
+      body.mode-single .print-label{ width:28%; }
+      body.mode-single .print-img-box{ height:340px; padding:10px; }
+      body.mode-single .print-img-box img{ max-height:320px; }
+      body.mode-single .signature-area{ margin-top:48px; font-size:11.5pt; }
+      body.mode-summary:not(.sum-landscape) .print-items-table{ font-size:9.5pt; }
+      body.mode-summary:not(.sum-landscape) .print-title-sum{ font-size:16pt; margin-top:6px; }
+      body.mode-summary:not(.sum-landscape) .print-header-info{ font-size:10.5pt; }
+      body.mode-summary:not(.sum-landscape) .signature-area{ margin-top:48px; font-size:11pt; }
     }
   
     /* ===== StarChart theme (designmd.ai/chef/starchart) ===== */
@@ -804,6 +825,7 @@
 <!-- 1. โครงสร้าง HTML สำหรับปริ้น "ใบสรุปรวม" (แนวนอน) -->
 <!-- ============================================== -->
 <div id="printSectionSummary">
+  <img src="letterhead.jpg" alt="ศูนย์การแพทย์ธรรมศาสตร์" class="print-letterhead">
   <div class="print-title-sum">ใบรายงานผลการตรวจรับครุภัณฑ์</div>
 
   <div class="print-header-info">
@@ -848,6 +870,7 @@
 <!-- 2. โครงสร้าง HTML สำหรับปริ้น "ใบเดี่ยวพร้อมรูป" (แนวตั้ง) -->
 <!-- ============================================== -->
 <div id="printSectionSingle">
+  <img src="letterhead.jpg" alt="ศูนย์การแพทย์ธรรมศาสตร์" class="print-letterhead">
   <div class="print-title-single">แบบบันทึกการตรวจรับครุภัณฑ์</div>
   <div class="print-subtitle mt-3">ชื่อรายการ : <span id="ps_itemName"></span></div>
 
@@ -1905,7 +1928,7 @@
     });
     $('#p_items_body').html(prs);
 
-    $('body').removeClass('mode-single').addClass('mode-summary');
+    $('body').removeClass('mode-single').addClass('mode-summary').toggleClass('sum-landscape', orient !== 'portrait');
     setPageSize(orient === 'portrait' ? 'A4 portrait' : 'A4 landscape', orient === 'portrait' ? '12mm' : '10mm');
     setTimeout(() => { window.print(); }, 300);
   }
@@ -1940,7 +1963,7 @@
       $('#ps_image').attr('src', NO_IMG_WIDE);
     }
 
-    $('body').removeClass('mode-summary').addClass('mode-single');
+    $('body').removeClass('mode-summary sum-landscape').addClass('mode-single');
     setPageSize('A4 portrait', '12mm');
     setTimeout(() => { window.print(); }, 700);
   }
