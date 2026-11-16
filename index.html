@@ -782,7 +782,10 @@
 
       </div>
       <div class="modal-footer justify-content-between">
-        <button type="button" class="btn btn-warning fw-bold" onclick="printSummary()"><i class="bi bi-printer me-1"></i> พิมพ์ใบสรุปรวม (แนวนอน)</button>
+        <div class="d-flex gap-2 flex-wrap">
+          <button type="button" class="btn btn-warning fw-bold" onclick="printSummary('landscape')"><i class="bi bi-printer me-1"></i> พิมพ์ใบสรุปรวม (แนวนอน)</button>
+          <button type="button" class="btn btn-warning fw-bold" onclick="printSummary('portrait')"><i class="bi bi-printer me-1"></i> พิมพ์ใบสรุปรวม (แนวตั้ง)</button>
+        </div>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิดหน้าต่าง</button>
       </div>
     </div>
@@ -1874,7 +1877,7 @@
   // --------------------------------------------------------
 
   // ปริ้นรูปแบบที่ 1: ตารางสรุปรวม (แนวนอน)
-  function printSummary() {
+  function printSummary(orient) {
     if(activeRowIndex < 0) return;
     const group = currentHistoryData[activeRowIndex];
 
@@ -1903,7 +1906,7 @@
     $('#p_items_body').html(prs);
 
     $('body').removeClass('mode-single').addClass('mode-summary');
-    setPageSize('A4 landscape', '10mm');
+    setPageSize(orient === 'portrait' ? 'A4 portrait' : 'A4 landscape', orient === 'portrait' ? '12mm' : '10mm');
     setTimeout(() => { window.print(); }, 300);
   }
 
