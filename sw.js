@@ -3,11 +3,12 @@
    - Static assets (ไอคอน/manifest): cache-first
    - ไม่แคชคำขอไปยัง backend (GAS) เพื่อให้ข้อมูลสดเสมอ
    - ออฟไลน์: ใช้แคชล่าสุดที่มี */
-const CACHE = 'asset-shell-v2';
+const CACHE = 'asset-shell-v3';
 const SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
+  './letterhead.jpg',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
