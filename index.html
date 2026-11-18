@@ -346,12 +346,21 @@
     .hist-card-meta i{ color:var(--orange); margin-right:5px; }
 
     /* ซ่อนส่วน Print จากหน้าเว็บปกติ */
-    #printSectionSummary, #printSectionSingle{ display:none; }
+    #printSectionSummary, #printSectionSingle, #printSectionSticker{ display:none; }
+    .stk{ box-sizing:border-box; background:#fff; color:#000; font-family:'Sarabun',sans-serif; display:flex; flex-direction:column; justify-content:space-between; overflow:hidden; padding:.2cm; border:1px solid #bbb; }
+    .stk-head{ font-size:.55em; color:#333; text-align:center; letter-spacing:.2px; border-bottom:1px solid #000; padding-bottom:.08cm; }
+    .stk-fa{ font-weight:700; text-align:center; white-space:nowrap; letter-spacing:0; }
+    .stk-name{ text-align:center; line-height:1.25; font-weight:600; overflow:hidden; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; }
+    .stk-foot{ font-size:.6em; display:flex; justify-content:space-between; gap:.1cm; border-top:1px solid #000; padding-top:.08cm; }
+    .stk-foot span:first-child{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .print-letterhead{ display:block; width:100%; height:auto; margin:0 0 6px; }
 
     /* CSS สำหรับการพิมพ์ (Print) — คงเดิมเพื่อให้เอกสารกระดาษถูกต้อง */
     @media print {
-      body > *:not(#printSectionSummary):not(#printSectionSingle){ display:none !important; }
+      body > *:not(#printSectionSummary):not(#printSectionSingle):not(#printSectionSticker){ display:none !important; }
+      body.mode-sticker #printSectionSticker{ display:block !important; }
+      body.mode-sticker .stk{ border:none !important; page-break-after:always; break-after:page; }
+      body.mode-sticker .stk:last-child{ page-break-after:auto; break-after:auto; }
       body{ background:#fff; margin:0; padding:0; color:#000; font-family:'Sarabun', sans-serif; }
       body.mode-summary #printSectionSummary{ display:block !important; }
       body.mode-single #printSectionSingle{ display:block !important; }
@@ -574,6 +583,14 @@
     }
       .btn-generate{ background:linear-gradient(150deg,#4ADE80,#22C55E); color:#052e16; border:none; font-weight:700; box-shadow:0 0 16px rgba(74,222,128,.35); }
     .btn-generate:hover{ color:#052e16; filter:brightness(1.07); box-shadow:0 0 22px rgba(74,222,128,.5); }
+      #stickerPage .card-body, #reportPage .card-body, #importPage .card-body{ color:var(--text); }
+    #stickerPage .form-control, #stickerPage .form-select{ color:var(--text) !important; background:var(--surface-2) !important; }
+    #stickerPage input[type=number]{ color:var(--text) !important; -webkit-text-fill-color:var(--text); }
+    #stickerPage .table{ --bs-table-color:var(--text); --bs-table-bg:transparent; color:var(--text); }
+    #stickerPage .table > :not(caption) > * > *{ color:var(--text); background-color:transparent; border-color:var(--border); }
+    #stickerPage .text-muted{ color:var(--muted) !important; }
+    #stickerPage .text-warning{ color:var(--star) !important; }
+    body.theme-light #stickerPage .text-warning{ color:#8A6A00 !important; }
   </style>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fredoka:wght@500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
 </head>
@@ -591,6 +608,7 @@
     <a class="side-link" data-page="import" onclick="showPage('import', this)"><i class="bi bi-file-earmark-excel"></i><span>นำเข้า PO</span></a>
     <a class="side-link" data-page="history" onclick="showPage('history', this)"><i class="bi bi-clock-history"></i><span>ประวัติ</span></a>
     <a class="side-link" data-page="report" onclick="showPage('report', this)"><i class="bi bi-file-earmark-bar-graph"></i><span>รายงาน</span></a>
+    <a class="side-link" data-page="sticker" onclick="showPage('sticker', this)"><i class="bi bi-tag"></i><span>สติกเกอร์</span></a>
   </nav>
   <div class="sb-foot">พัฒนาโดย <b>SAWARiN</b></div>
 </aside>
@@ -611,6 +629,7 @@
   <div class="mnav" data-page="import" onclick="showPage('import', this)"><i class="bi bi-file-earmark-excel"></i>นำเข้า PO</div>
   <div class="mnav" data-page="history" onclick="showPage('history', this)"><i class="bi bi-clock-history"></i>ประวัติ</div>
   <div class="mnav" data-page="report" onclick="showPage('report', this)"><i class="bi bi-file-earmark-bar-graph"></i>รายงาน</div>
+  <div class="mnav" data-page="sticker" onclick="showPage('sticker', this)"><i class="bi bi-tag"></i>สติกเกอร์</div>
 </nav>
 
 <!-- PAGE: บันทึกรายการ -->
@@ -647,6 +666,7 @@
         <div class="d-flex align-items-center gap-2 flex-wrap">
           <input type="number" id="fa_year" class="form-control form-control-sm" style="width:96px;" min="0" max="99" placeholder="ปี ค.ศ." title="ปี ค.ศ. 2 หลัก (เว้นว่าง = ปีที่ตรวจรับ/ปีปัจจุบัน)">
           <button type="button" class="btn btn-sm btn-generate" onclick="generateFA()"><i class="bi bi-magic me-1"></i> Generate เลขครุภัณฑ์</button>
+          <button type="button" class="btn btn-sm btn-outline-light" onclick="printAllRowStickers()" title="พิมพ์บาร์โค้ดทุกรายการที่มีเลขครุภัณฑ์"><i class="bi bi-upc-scan me-1"></i> พิมพ์บาร์โค้ดทั้งหมด</button>
           <button type="button" class="btn btn-sm btn-orange" onclick="addItemFromLast()"><i class="bi bi-plus-lg me-1"></i> เพิ่มรายการ</button>
         </div>
       </div>
@@ -741,6 +761,53 @@
           <button type="button" class="btn btn-orange" onclick="exportReport(true)"><i class="bi bi-funnel me-2"></i> ดาวน์โหลดตามตัวกรอง</button>
           <button type="button" class="btn btn-outline-light" onclick="exportReport(false)"><i class="bi bi-download me-2"></i> ดาวน์โหลดทั้งหมด</button>
           <button type="button" class="btn btn-outline-light" onclick="clearReportFilters()"><i class="bi bi-x-circle me-2"></i> ล้างตัวกรอง</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: สติกเกอร์ -->
+<div class="container main-container py-4 page-section d-none" id="stickerPage">
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header"><span class="hd-ic"><i class="bi bi-sliders"></i></span><div class="hd-tt">ตั้งค่าสติกเกอร์<small>ขนาดบันทึกไว้ในเครื่องนี้</small></div></div>
+        <div class="card-body row g-3">
+          <div class="col-6"><label class="form-label">กว้าง (ซม.)</label><input type="number" id="stk_w" class="form-control" min="2" max="30" step="0.1" oninput="stkCfgChanged()"></div>
+          <div class="col-6"><label class="form-label">ยาว (ซม.)</label><input type="number" id="stk_h" class="form-control" min="2" max="40" step="0.1" oninput="stkCfgChanged()"></div>
+          <div class="col-6"><label class="form-label">จำนวนดวง/รายการ</label><input type="number" id="stk_copies" class="form-control" min="1" max="20" value="1"></div>
+          <div class="col-6 d-flex align-items-end"><button type="button" class="btn btn-outline-light w-100" onclick="stkReset()"><i class="bi bi-arrow-counterclockwise me-1"></i> ค่าเริ่มต้น 5×8</button></div>
+          <div class="col-12">
+            <div class="text-muted mb-2" style="font-size:.82rem;">ข้อมูลที่แสดง · จัดชิด · ขนาดตัวอักษร (%) · ลำดับบน→ล่าง</div>
+            <div id="stkFields"></div>
+          </div>
+          <div class="col-12">
+            <div class="text-muted mb-2" style="font-size:.82rem;">ตัวอย่าง (ขนาดจริง)</div>
+            <div id="stkPreview" style="display:flex;justify-content:center;padding:18px;background:var(--surface-2);border-radius:16px;overflow:auto;"></div>
+          </div>
+          <div class="col-12"><button type="button" class="btn btn-orange w-100" onclick="printStickers()"><i class="bi bi-printer me-2"></i> พิมพ์สติกเกอร์ที่เลือก (<span id="stkSelCount">0</span>)</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header hd-between flex-wrap">
+          <div class="hd-left"><span class="hd-ic"><i class="bi bi-tag"></i></span><div class="hd-tt">เลือกรายการครุภัณฑ์<small>ดึงจากประวัติการตรวจรับ</small></div></div>
+          <button type="button" class="btn btn-sm btn-outline-light" onclick="loadStickerData(true)"><i class="bi bi-arrow-clockwise me-1"></i> รีเฟรช</button>
+        </div>
+        <div class="card-body">
+          <div class="d-flex gap-2 flex-wrap mb-3 align-items-center">
+            <input type="search" id="stk_q" class="form-control" style="flex:1;min-width:200px;" placeholder="ค้นหา เลขครุภัณฑ์ / ชื่อรายการ / แผนก / PO" oninput="renderStickerList()">
+            <label class="d-flex align-items-center gap-2 text-muted" style="font-size:.88rem;white-space:nowrap;"><input type="checkbox" id="stk_onlyFA" onchange="renderStickerList()"> เฉพาะที่มีเลขครุภัณฑ์</label>
+          </div>
+          <div class="table-responsive" style="max-height:520px;overflow:auto;">
+            <table class="table table-sm align-middle mb-0" style="font-size:.88rem;">
+              <thead style="position:sticky;top:0;background:var(--surface);z-index:1;"><tr><th style="width:36px;"><input type="checkbox" id="stk_all" onchange="stkToggleAll(this.checked)"></th><th>เลขครุภัณฑ์</th><th>ชื่อรายการ</th><th>แผนก</th><th>PO</th></tr></thead>
+              <tbody id="stkBody"><tr><td colspan="5" class="text-center text-muted py-4">กำลังโหลด...</td></tr></tbody>
+            </table>
+          </div>
+          <div class="text-muted mt-2" id="stkInfo" style="font-size:.82rem;"></div>
         </div>
       </div>
     </div>
@@ -890,6 +957,7 @@
 <!-- ============================================== -->
 <!-- 2. โครงสร้าง HTML สำหรับปริ้น "ใบเดี่ยวพร้อมรูป" (แนวตั้ง) -->
 <!-- ============================================== -->
+<div id="printSectionSticker"></div>
 <div id="printSectionSingle">
   <img src="letterhead.jpg" alt="ศูนย์การแพทย์ธรรมศาสตร์" class="print-letterhead">
   <div class="print-title-single">แบบบันทึกการตรวจรับครุภัณฑ์</div>
@@ -1138,12 +1206,13 @@
     $(`#${p}Page`).removeClass('d-none');
     $('.nav-link, .mnav, .side-link').removeClass('active');
     $(`[data-page="${p}"]`).addClass('active');
-    const TT = { entry:['บันทึกการตรวจรับ','ค้นหาจากเลข PO แล้วกรอกรายการครุภัณฑ์'], import:['นำเข้าข้อมูล PO','วางข้อมูลจาก Excel เพื่ออัปเดตฐานข้อมูล PO'], history:['ประวัติการตรวจรับ','จัดกลุ่มตามใบตรวจรับ แก้ไข ลบ และพิมพ์เอกสาร'], report:['รายงาน Excel','ดึงข้อมูลตามตัวกรอง หรือดึงทั้งหมด'] };
+    const TT = { entry:['บันทึกการตรวจรับ','ค้นหาจากเลข PO แล้วกรอกรายการครุภัณฑ์'], import:['นำเข้าข้อมูล PO','วางข้อมูลจาก Excel เพื่ออัปเดตฐานข้อมูล PO'], history:['ประวัติการตรวจรับ','จัดกลุ่มตามใบตรวจรับ แก้ไข ลบ และพิมพ์เอกสาร'], report:['รายงาน Excel','ดึงข้อมูลตามตัวกรอง หรือดึงทั้งหมด'], sticker:['ปริ้นสติกเกอร์ครุภัณฑ์','เลือกรายการ ตั้งขนาด แล้วพิมพ์ติดครุภัณฑ์'] };
     $('#tbTitle').text(TT[p][0]); $('#tbSub').text(TT[p][1]);
     window.scrollTo(0, 0);
     if(p === 'history') loadHistory();
     if(p === 'import') loadImportStatus();
     if(p === 'report') loadReportData(false);
+    if(p === 'sticker') loadStickerData(false);
   }
 
   function renderOptions(id, list) {
@@ -1470,6 +1539,7 @@
              <small>*ใช้หมายเลขเดียวกัน · เว้นว่าง SN</small>
           </div>
           <div class="d-flex gap-2">
+             <button type="button" class="btn btn-sm btn-outline-light" onclick="printRowSticker(${id})"><i class="bi bi-upc-scan"></i> พิมพ์บาร์โค้ด</button>
              <button type="button" class="btn btn-sm btn-outline-info" onclick="duplicateItem(${id})"><i class="bi bi-file-plus"></i> คัดลอก 1 แถว</button>
              <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(${id})"><i class="bi bi-trash"></i> ลบรายการ</button>
           </div>
@@ -1714,6 +1784,155 @@
     if(!s){ s = document.createElement('style'); s.id = 'dynPageStyle'; document.head.appendChild(s); }
     s.textContent = '@page{ size:' + size + '; margin:' + margin + '; }';
   }
+
+  // ===== สติกเกอร์ครุภัณฑ์ =====
+  let stkItems = null, stkSel = new Set();
+  const STK_DEF = { w: 5, h: 8 };
+  const STK_FIELDS = [
+    { k:'header',  label:'หัวหน่วยงาน',   on:true,  size:60,  pre:'' },
+    { k:'fa',      label:'เลขครุภัณฑ์',   on:true,  size:100, pre:'' },
+    { k:'barcode', label:'บาร์โค้ด',       on:true,  size:100, pre:'' },
+    { k:'name',    label:'ชื่อรายการ',     on:true,  size:78,  pre:'' },
+    { k:'dept',    label:'แผนก',           on:true,  size:70,  pre:'แผนก ' },
+    { k:'date',    label:'วันที่พิมพ์',    on:true,  size:70,  pre:'พิมพ์ ' },
+    { k:'assetId', label:'หมายเลขพัสดุ',   on:false, size:70,  pre:'พัสดุ ' },
+    { k:'po',      label:'เลข PO',         on:false, size:70,  pre:'PO ' },
+    { k:'brand',   label:'ยี่ห้อ/รุ่น',    on:false, size:70,  pre:'' },
+    { k:'sn',      label:'S/N',            on:false, size:70,  pre:'S/N ' },
+    { k:'place',   label:'ชั้น/ห้อง',      on:false, size:70,  pre:'' }
+  ];
+  let stkCur = null;
+  function stkCfg(){
+    let c = null; try { c = JSON.parse(localStorage.getItem('assetStickerCfg') || 'null'); } catch(e){}
+    const out = { w: STK_DEF.w, h: STK_DEF.h, fields: [] };
+    if (c && c.w > 0 && c.h > 0) { out.w = c.w; out.h = c.h; }
+    const saved = (c && Array.isArray(c.fields)) ? c.fields : [];
+    saved.forEach(f => { const d = STK_FIELDS.find(x => x.k === f.k); if (d) out.fields.push(Object.assign({}, d, { on: !!f.on, size: f.size || d.size, align: f.align || 'center' })); });
+    STK_FIELDS.forEach(d => { if (!out.fields.find(x => x.k === d.k)) out.fields.push(Object.assign({}, d, { align: 'center' })); });
+    return out;
+  }
+  function stkSave(){ try { localStorage.setItem('assetStickerCfg', JSON.stringify(stkCur)); } catch(e){} }
+  function stkCfgInit(){ stkCur = stkCfg(); $('#stk_w').val(stkCur.w); $('#stk_h').val(stkCur.h); renderStkFields(); renderStkPreview(); }
+  function stkCfgChanged(){
+    const w = parseFloat($('#stk_w').val()), h = parseFloat($('#stk_h').val());
+    if (w > 0 && h > 0) { stkCur.w = w; stkCur.h = h; stkSave(); }
+    renderStkPreview();
+  }
+  function stkReset(){ stkCur = { w: STK_DEF.w, h: STK_DEF.h, fields: STK_FIELDS.map(d => Object.assign({}, d, { align:'center' })) }; stkSave(); $('#stk_w').val(stkCur.w); $('#stk_h').val(stkCur.h); renderStkFields(); renderStkPreview(); }
+  function renderStkFields(){
+    $('#stkFields').html(stkCur.fields.map((f, i) =>
+      '<div class="d-flex align-items-center gap-2 mb-2" style="font-size:.86rem;">'
+      + '<input type="checkbox" ' + (f.on ? 'checked' : '') + ' onchange="stkField(' + i + ',\'on\',this.checked)">'
+      + '<span style="flex:1;min-width:0;">' + f.label + '</span>'
+      + '<select class="form-select form-select-sm" style="width:64px;padding:.2rem .4rem;" onchange="stkField(' + i + ',\'align\',this.value)">'
+      + ['left:ซ้าย','center:กลาง','right:ขวา'].map(o => { const [v, t] = o.split(':'); return '<option value="' + v + '"' + (f.align === v ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select>'
+      + '<input type="number" class="form-control form-control-sm" style="width:62px;padding:.2rem .4rem;" min="30" max="250" step="5" value="' + f.size + '" title="ขนาด %" onchange="stkField(' + i + ',\'size\',+this.value)">'
+      + '<button type="button" class="btn btn-sm btn-outline-light px-2 py-0" onclick="stkMove(' + i + ',-1)"' + (i === 0 ? ' disabled' : '') + '><i class="bi bi-chevron-up"></i></button>'
+      + '<button type="button" class="btn btn-sm btn-outline-light px-2 py-0" onclick="stkMove(' + i + ',1)"' + (i === stkCur.fields.length - 1 ? ' disabled' : '') + '><i class="bi bi-chevron-down"></i></button></div>').join(''));
+  }
+  function stkField(i, k, v){ stkCur.fields[i][k] = v; stkSave(); renderStkPreview(); }
+  function stkMove(i, d){ const j = i + d; if (j < 0 || j >= stkCur.fields.length) return; const t = stkCur.fields[i]; stkCur.fields[i] = stkCur.fields[j]; stkCur.fields[j] = t; stkSave(); renderStkFields(); renderStkPreview(); }
+  const escS = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  // Code 128 (subset B) -> SVG
+  const C128 = ['212222','222122','222221','121223','121322','131222','122213','122312','132212','221213','221312','231212','112232','122132','122231','113222','123122','123221','223211','221132','221231','213212','223112','312131','311222','321122','321221','312212','322112','322211','212123','212321','232121','111323','131123','131321','112313','132113','132311','211313','231113','231311','112133','112331','132131','113123','113321','133121','313121','211331','231131','213113','213311','213131','311123','311321','331121','312113','312311','332111','314111','221411','431111','111224','111422','121124','121421','141122','141221','112214','112412','122114','122411','142112','142211','241211','221114','413111','241112','134111','111242','121142','121241','114212','124112','124211','411212','421112','421211','212141','214121','412121','111143','111341','131141','114113','114311','411113','411311','113141','114131','311141','411131','211412','211214','211232','2331112'];
+  function code128Svg(text, hCm){
+    const vals = [104]; let sum = 104;
+    for (let i = 0; i < text.length; i++) { const v = text.charCodeAt(i) - 32; if (v < 0 || v > 94) continue; vals.push(v); sum += v * (vals.length - 1); }
+    vals.push(sum % 103, 106);
+    let x = 10, bars = '';
+    vals.forEach(v => { const p = C128[v]; for (let i = 0; i < p.length; i++) { const w = +p[i]; if (i % 2 === 0) bars += '<rect x="' + x + '" y="0" width="' + w + '" height="1" />'; x += w; } });
+    const W = x + 10;
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' 1" preserveAspectRatio="none" shape-rendering="crispEdges" style="display:block;width:100%;height:' + hCm + 'cm;" fill="#000">' + bars + '</svg>';
+  }
+
+  function stkHtml(it, w, h){
+    const cfg = stkCur || stkCfg();
+    const fa = it.fa || it.assetId || '-';
+    const fsBase = Math.max(6, Math.min(15, (w - 0.5) * 28.35 / (Math.max(fa.length, 12) * 0.6)));
+    const today = new Date().toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'2-digit' });
+    const val = {
+      header: 'ศูนย์การแพทย์ธรรมศาสตร์', fa: fa, name: it.name || '-', dept: it.dept || '-', date: today,
+      assetId: it.assetId || '-', po: it.po || '-', brand: [it.brand, it.model].filter(Boolean).join(' / ') || '-', sn: it.sn || '-',
+      place: [it.floor, it.room].filter(Boolean).join(' / ') || '-'
+    };
+    const body = cfg.fields.filter(f => f.on).map(f => {
+      const fs = fsBase * f.size / 100;
+      if (f.k === 'barcode') return '<div class="stk-f" style="text-align:' + f.align + ';"><div style="width:' + Math.min(100, f.size) + '%;margin:' + (f.align === 'center' ? '0 auto' : f.align === 'right' ? '0 0 0 auto' : '0') + ';">' + code128Svg(fa, Math.max(0.5, h * 0.12 * f.size / 100)) + '</div></div>';
+      const bold = (f.k === 'fa') ? 'font-weight:700;white-space:nowrap;' : (f.k === 'name' ? 'font-weight:600;' : '');
+      return '<div class="stk-f" style="text-align:' + f.align + ';font-size:' + fs + 'pt;' + bold + '">' + escS(f.pre + val[f.k]) + '</div>';
+    }).join('');
+    return '<div class="stk" style="width:' + w + 'cm;height:' + h + 'cm;font-size:' + fsBase + 'pt;justify-content:space-around;gap:.04cm;">' + body + '</div>';
+  }
+  function renderStkPreview(){
+    if (!stkCur) return;
+    const w = stkCur.w, h = stkCur.h;
+    const first = stkItems && stkItems.find((x,i) => stkSel.has(i)) || { fa:'26-8010030017-0002', assetId:'8010030017', name:'โต๊ะทำงานขนาด 0.65*1.40*0.75 เมตร', dept:'11ENT', po:'626100007', brand:'-', sn:'-', floor:'3', room:'ห้องตรวจ 1' };
+    $('#stkPreview').html(stkHtml(first, w, h));
+  }
+  async function loadStickerData(force){
+    stkCfgInit();
+    if (stkItems && !force) return renderStickerList();
+    $('#stkBody').html('<tr><td colspan="5" class="text-center text-muted py-4"><span class="spinner-border spinner-border-sm me-2"></span>กำลังโหลด...</td></tr>');
+    try {
+      const r = await runP('getHistory', 3000);
+      if (!r || !r.success) throw new Error((r && r.message) || 'โหลดไม่สำเร็จ');
+      stkItems = []; stkSel = new Set();
+      (r.groups || []).forEach(g => (g.items || []).forEach(it => stkItems.push({ fa: it.faNo || '', assetId: it.assetId, name: it.itemName, dept: it.dept, po: g.po_no, brand: it.brand, model: it.model, sn: it.sn, floor: it.floor, room: it.room })));
+      renderStickerList();
+    } catch(e){ $('#stkBody').html('<tr><td colspan="5" class="text-center text-warning py-4">' + escS(e.message || e) + '</td></tr>'); }
+  }
+  function stkFiltered(){
+    const q = ($('#stk_q').val() || '').trim().toLowerCase(), only = $('#stk_onlyFA').is(':checked');
+    const out = [];
+    (stkItems || []).forEach((it, i) => {
+      if (only && !it.fa) return;
+      if (q && ![it.fa, it.assetId, it.name, it.dept, it.po].join(' ').toLowerCase().includes(q)) return;
+      out.push(i);
+    });
+    return out;
+  }
+  function renderStickerList(){
+    if (!stkItems) return;
+    const idx = stkFiltered(), LIM = 300;
+    $('#stkBody').html(idx.length ? idx.slice(0, LIM).map(i => { const it = stkItems[i];
+      return '<tr style="cursor:pointer;" onclick="stkToggle(' + i + ')"><td><input type="checkbox" ' + (stkSel.has(i) ? 'checked' : '') + ' onclick="event.stopPropagation();stkToggle(' + i + ')"></td><td class="text-warning fw-bold">' + (it.fa ? escS(it.fa) : '<span class="text-muted fw-normal">ยังไม่มีเลข (' + escS(it.assetId || '-') + ')</span>') + '</td><td>' + escS(it.name) + '</td><td>' + escS(it.dept) + '</td><td>' + escS(it.po) + '</td></tr>'; }).join('')
+      : '<tr><td colspan="5" class="text-center text-muted py-4">ไม่พบรายการ</td></tr>');
+    $('#stkInfo').text('แสดง ' + Math.min(idx.length, LIM).toLocaleString() + ' จาก ' + idx.length.toLocaleString() + ' รายการ' + (idx.length > LIM ? ' (ใช้ช่องค้นหาเพื่อกรอง)' : ''));
+    $('#stkSelCount').text(stkSel.size); renderStkPreview();
+  }
+  function stkToggle(i){ stkSel.has(i) ? stkSel.delete(i) : stkSel.add(i); renderStickerList(); }
+  function stkToggleAll(on){ stkFiltered().slice(0, 300).forEach(i => on ? stkSel.add(i) : stkSel.delete(i)); renderStickerList(); }
+  function doPrintStickers(list, copies){
+    if (!stkCur) stkCur = stkCfg();
+    const w = stkCur.w, h = stkCur.h;
+    let html = '';
+    list.forEach(it => { for (let c = 0; c < copies; c++) html += stkHtml(it, w, h); });
+    $('#printSectionSticker').html(html);
+    $('body').removeClass('mode-single mode-summary sum-landscape').addClass('mode-sticker');
+    setPageSize(w + 'cm ' + h + 'cm', '0');
+    setTimeout(() => { window.print(); }, 300);
+  }
+  function printStickers(){
+    const copies = Math.min(20, Math.max(1, parseInt($('#stk_copies').val()) || 1));
+    if (!stkSel.size) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายการที่จะพิมพ์', 'warning');
+    doPrintStickers([...stkSel].sort((a,b) => a-b).map(i => stkItems[i]), copies);
+  }
+  function rowStickerItem(row){
+    return { fa: row.find('.fa-no').val() || '', assetId: row.find('.s2-asset').val() || '', name: row.find('.itemName').val(), dept: row.find('.s2-dept').val(),
+      po: $('#po_no').val(), brand: row.find('.brand').val(), model: row.find('.model').val(), sn: row.find('.sn').val(), floor: row.find('.s2-floor').val(), room: row.find('.s2-room').val() };
+  }
+  function printRowSticker(id){
+    const it = rowStickerItem($('#row_' + id));
+    if (!it.fa) return Swal.fire('ยังไม่มีเลขครุภัณฑ์', 'กดปุ่ม Generate เลขครุภัณฑ์ก่อน แล้วจึงพิมพ์บาร์โค้ด', 'warning');
+    doPrintStickers([it], 1);
+  }
+  function printAllRowStickers(){
+    const items = $('.item-row').map(function(){ return rowStickerItem($(this)); }).get().filter(x => x.fa);
+    if (!items.length) return Swal.fire('ยังไม่มีเลขครุภัณฑ์', 'กดปุ่ม Generate เลขครุภัณฑ์ก่อน แล้วจึงพิมพ์บาร์โค้ด', 'warning');
+    doPrintStickers(items, 1);
+  }
+  window.addEventListener('afterprint', () => { document.body.classList.remove('mode-sticker'); });
 
   // ค้นหาในประวัติ
   let historyQuery = '';
@@ -2059,7 +2278,7 @@
     });
     $('#p_items_body').html(prs);
 
-    $('body').removeClass('mode-single').addClass('mode-summary').toggleClass('sum-landscape', orient !== 'portrait');
+    $('body').removeClass('mode-single mode-sticker').addClass('mode-summary').toggleClass('sum-landscape', orient !== 'portrait');
     setPageSize(orient === 'portrait' ? 'A4 portrait' : 'A4 landscape', orient === 'portrait' ? '12mm' : '10mm');
     setTimeout(() => { window.print(); }, 300);
   }
@@ -2094,7 +2313,7 @@
       $('#ps_image').attr('src', NO_IMG_WIDE);
     }
 
-    $('body').removeClass('mode-summary sum-landscape').addClass('mode-single');
+    $('body').removeClass('mode-summary sum-landscape mode-sticker').addClass('mode-single');
     setPageSize('A4 portrait', '12mm');
     setTimeout(() => { window.print(); }, 700);
   }
