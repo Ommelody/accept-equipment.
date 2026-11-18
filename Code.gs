@@ -61,7 +61,10 @@ const API = {
   importPORows: importPORows,
   logPOImport: logPOImport,
   getImportStatus: getImportStatus,
-  getReportData: getReportData
+  getReportData: getReportData,
+  listPOsByDate: listPOsByDate,
+  generateFixedAssetNumbers: generateFixedAssetNumbers,
+  importRunningMax: importRunningMax
 };
 
 // ===== Logic (เชื่อมฐานข้อมูลเดิม) =====
@@ -186,7 +189,7 @@ function getReportData() {
     if (!sheet) return { success: false, message: 'ไม่พบชีท Data_Log' };
     const data = sheet.getDataRange().getDisplayValues();
     data.shift();
-    return { success: true, rows: data.filter(function (r) { return r[0] !== '' || r[1] !== ''; }).map(function (r) { return r.slice(0, 18); }) };
+    return { success: true, rows: data.filter(function (r) { return r[0] !== '' || r[1] !== ''; }).map(function (r) { return r.slice(0, 19); }) };
   } catch (e) {
     return { success: false, message: e.toString() };
   }
@@ -206,11 +209,40 @@ function searchPO(poNumber) {
       itemName: r[16],
       qty: r[17],
       unit: r[19],
-      price: String(r[22]).replace(/,/g, '').trim()
+      price: String(r[22]).replace(/,/g, '').trim(),
+      dept: String(r[30] || '').trim()
     }));
     return { success: true, poDate: results[0][6], vendor: results[0][10], items: items };
   }
   return { success: false, message: 'ไม่พบเลขที่ PO นี้ในระบบ' };
+}
+
+// รายการ PO ตามวันที่ (คอลัมน์ G = วันที่ในเอกสาร) — dateStr รูปแบบ yyyy-mm-dd
+function parseDateLoose_(s) {
+  s = String(s || '').trim(); if (!s) return null;
+  var m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/), d, mo, y;
+  if (m) { y = +m[1]; mo = +m[2]; d = +m[3]; }
+  else { m = s.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2,4})/); if (!m) return null; d = +m[1]; mo = +m[2]; y = +m[3]; }
+  if (y < 100) y += 2000; if (y > 2400) y -= 543;
+  return y + '-' + ('0' + mo).slice(-2) + '-' + ('0' + d).slice(-2);
+}
+
+function listPOsByDate(dateStr) {
+  try {
+    const poSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Data_PO');
+    if (!poSheet) return { success: false, message: 'ไม่พบชีท Data_PO กรุณานำเข้าข้อมูลก่อน' };
+    const data = poSheet.getDataRange().getDisplayValues();
+    const map = {}, order = [];
+    for (var i = 1; i < data.length; i++) {
+      if (parseDateLoose_(data[i][6]) !== dateStr) continue;
+      var po = data[i][3]; if (!po) continue;
+      if (!map[po]) { map[po] = { po: po, vendor: data[i][10], count: 0 }; order.push(po); }
+      map[po].count++;
+    }
+    return { success: true, pos: order.map(function (k) { return map[k]; }) };
+  } catch (e) {
+    return { success: false, message: e.toString() };
+  }
 }
 
 function saveFormData(formObject) {
@@ -238,7 +270,7 @@ function saveFormData(formObject) {
         batchTimestamp,
         formObject.po_no, formObject.po_date, formObject.receive_no, formObject.receive_date, formObject.vendor,
         item.assetId, item.itemName, item.unit, item.price, item.type, item.brand, item.model, item.sn,
-        item.dept, item.floor, item.room, imageUrl
+        item.dept, item.floor, item.room, imageUrl, item.faNo || ''
       ]);
     });
     return { success: true, message: "บันทึกข้อมูลเรียบร้อยแล้ว" };
@@ -268,7 +300,7 @@ function getHistory(limit) {
     groupedData[timestamp].items.push({
       assetId: row[6], itemName: row[7], unit: row[8], price: row[9],
       type: row[10], brand: row[11], model: row[12], sn: row[13],
-      dept: row[14], floor: row[15], room: row[16], image: row[17]
+      dept: row[14], floor: row[15], room: row[16], image: row[17], faNo: row[18] || ''
     });
   });
 
@@ -329,6 +361,7 @@ function updateHistoryItem(groupKey, itemIndex, itemData) {
       itemData.dept, itemData.floor, itemData.room
     ]]);
     sheet.getRange(rowNum, 18).setValue(imageUrl);
+    sheet.getRange(rowNum, 19).setNumberFormat('@').setValue(itemData.faNo || '');
 
     return { success: true, message: 'แก้ไขข้อมูลเรียบร้อยแล้ว', imageUrl: imageUrl };
   } catch (e) {
@@ -348,6 +381,70 @@ function deleteHistoryItem(groupKey, itemIndex) {
 
     sheet.deleteRow(matchRows[itemIndex]);
     return { success: true, message: 'ลบรายการเรียบร้อยแล้ว' };
+  } catch (e) {
+    return { success: false, message: e.toString() };
+  }
+}
+
+
+// ===== Generate เลขครุภัณฑ์ (Fix Asset) : YY-<รหัสพัสดุ 10 หลัก>-<รัน 4 หลัก> =====
+// ค่าสูงสุดของแต่ละกลุ่ม (ปี + รหัสพัสดุ) หาจากชีท SAP_Running (นำเข้าจากไฟล์ SAP) และ Data_Log คอลัมน์ S
+function getRunningMap_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const map = {};
+  const put = function (prefix, n) { if (!(map[prefix] >= n)) map[prefix] = n; };
+  const sr = ss.getSheetByName('SAP_Running');
+  if (sr && sr.getLastRow() >= 2) {
+    sr.getRange(2, 1, sr.getLastRow() - 1, 2).getDisplayValues().forEach(function (r) { put(String(r[0]).trim(), parseInt(r[1], 10) || 0); });
+  }
+  const dl = ss.getSheetByName('Data_Log');
+  if (dl && dl.getLastRow() >= 2) {
+    dl.getRange(2, 19, dl.getLastRow() - 1, 1).getDisplayValues().forEach(function (r) {
+      const m = /^(\d{2}-\d{10})-(\d{4})$/.exec(String(r[0]).trim());
+      if (m) put(m[1], parseInt(m[2], 10));
+    });
+  }
+  return map;
+}
+
+function generateFixedAssetNumbers(req) {
+  try {
+    const yy = String(req.year || '').replace(/\D/g, '').slice(-2);
+    if (yy.length !== 2) return { success: false, message: 'ปีไม่ถูกต้อง' };
+    const map = getRunningMap_();
+    const numbers = [], warnings = [];
+    (req.ids || []).forEach(function (id, i) {
+      const mat = String(id || '').replace(/\D/g, '');
+      if (mat.length !== 10) { numbers.push(''); warnings.push('บรรทัดที่ ' + (i + 1) + ': รหัสพัสดุ "' + (id || '') + '" ไม่ครบ 10 หลัก'); return; }
+      const prefix = yy + '-' + mat;
+      const next = (map[prefix] || 0) + 1;
+      if (next > 9999) { numbers.push(''); warnings.push('บรรทัดที่ ' + (i + 1) + ': รันเกิน 9999'); return; }
+      map[prefix] = next;
+      numbers.push(prefix + '-' + ('0000' + next).slice(-4));
+    });
+    return { success: true, numbers: numbers, warnings: warnings };
+  } catch (e) {
+    return { success: false, message: e.toString() };
+  }
+}
+
+// นำเข้าเลขรันนิ่งสูงสุดต่อกลุ่มจากไฟล์ SAP: list = [{p:'24-8010030002', max:12}]
+function importRunningMax(list) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sh = ss.getSheetByName('SAP_Running');
+    if (!sh) { sh = ss.insertSheet('SAP_Running'); sh.getRange(1, 1, 1, 3).setValues([['กลุ่ม (ปี-รหัสพัสดุ)', 'เลขรันสูงสุด', 'อัปเดตล่าสุด']]); }
+    const idx = {};
+    if (sh.getLastRow() >= 2) sh.getRange(2, 1, sh.getLastRow() - 1, 2).getDisplayValues().forEach(function (r, i) { idx[String(r[0]).trim()] = { row: i + 2, max: parseInt(r[1], 10) || 0 }; });
+    const at = Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy HH:mm');
+    const add = []; let updated = 0;
+    list.forEach(function (x) {
+      const cur = idx[x.p];
+      if (cur) { if (x.max > cur.max) { sh.getRange(cur.row, 2, 1, 2).setNumberFormat('@').setValues([[String(x.max), at]]); updated++; } }
+      else add.push([x.p, String(x.max), at]);
+    });
+    if (add.length) sh.getRange(sh.getLastRow() + 1, 1, add.length, 3).setNumberFormat('@').setValues(add);
+    return { success: true, added: add.length, updated: updated };
   } catch (e) {
     return { success: false, message: e.toString() };
   }
