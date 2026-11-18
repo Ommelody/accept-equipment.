@@ -1033,7 +1033,7 @@
             else if (onF) onF(String(err)); else console.error(err);
           });
       };
-      ['getInitialData','updatePOData','searchPO','saveFormData','getHistory','updateHistoryItem','deleteHistoryItem','importPORows','logPOImport','getImportStatus','getReportData','listPOsByDate','generateFixedAssetNumbers','importRunningMax'].forEach(m => {
+      ['getInitialData','updatePOData','searchPO','saveFormData','getHistory','updateHistoryItem','deleteHistoryItem','importPORows','logPOImport','getImportStatus','getReportData','listPOsByDate','getPODatesInMonth','generateFixedAssetNumbers','importRunningMax'].forEach(m => {
         h[m] = function(){ call(m, [...arguments]); return h; };
       });
       return h;
@@ -1060,8 +1060,9 @@
     Runner.prototype.generateFixedAssetNumbers=function(q){ const c={}; const yy=String(q.year).slice(-2); const nums=q.ids.map(id=>{ const m=String(id).replace(/\D/g,''); if(m.length!==10) return ''; const k=yy+'-'+m; c[k]=(c[k]||0)+1; return k+'-'+('000'+c[k]).slice(-4); }); this._done({success:true, numbers:nums, warnings:q.ids.map((id,i)=>String(id).replace(/\D/g,'').length!==10?'บรรทัดที่ '+(i+1)+': รหัสพัสดุ "'+id+'" ไม่ครบ 10 หลัก':null).filter(Boolean)}, 300); };
     Runner.prototype.importRunningMax=function(l){ this._done({success:true, added:l.length, updated:0}, 300); };
     Runner.prototype.listPOsByDate=function(d){ this._done({success:true, pos:[{po:'626080006', vendor:'บริษัท โกสินทร์เวชภัณฑ์ จำกัด', count:3},{po:'626080011', vendor:'หจก. สมาร์ท ออฟฟิศ', count:1}]}, 300); };
+    Runner.prototype.getPODatesInMonth=function(){ this._done({success:true, days:{3:2,12:1,18:4}}, 300); };
     const run = {};
-    ['withSuccessHandler','withFailureHandler','getInitialData','updatePOData','searchPO','saveFormData','getHistory','updateHistoryItem','deleteHistoryItem','importPORows','logPOImport','getImportStatus','getReportData','listPOsByDate','generateFixedAssetNumbers','importRunningMax'].forEach(m=>{
+    ['withSuccessHandler','withFailureHandler','getInitialData','updatePOData','searchPO','saveFormData','getHistory','updateHistoryItem','deleteHistoryItem','importPORows','logPOImport','getImportStatus','getReportData','listPOsByDate','getPODatesInMonth','generateFixedAssetNumbers','importRunningMax'].forEach(m=>{
       run[m] = function(){ const r = new Runner(); return r[m].apply(r, arguments); };
     });
     window.google = { script:{ run:run, host:{ close(){}, editor:{} } } };
@@ -1347,18 +1348,32 @@
   }
   function calNav(d) { calM += d; if (calM < 0) { calM = 11; calY--; } if (calM > 11) { calM = 0; calY++; } showPoCal(); }
   function calPick(d) { Swal.close(); onPoDatePicked(calY + '-' + String(calM+1).padStart(2,'0') + '-' + String(d).padStart(2,'0')); }
+  async function markPoDays() {
+    const ym = calY + '-' + String(calM+1).padStart(2,'0'), my = [calY, calM];
+    try {
+      const r = await runP('getPODatesInMonth', ym);
+      if (!r || !r.success || my[0] !== calY || my[1] !== calM) return;
+      Object.keys(r.days).forEach(d => {
+        const b = document.getElementById('calD_' + d); if (!b) return;
+        b.style.background = 'var(--accent-soft)'; b.style.borderColor = 'var(--orange)'; b.title = r.days[d] + ' รายการ';
+        b.innerHTML = d + '<span style="display:block;width:5px;height:5px;margin:2px auto 0;border-radius:50%;background:var(--orange);"></span>';
+      });
+    } catch(e) {}
+  }
   function showPoCal() {
     const first = new Date(calY, calM, 1).getDay(), days = new Date(calY, calM + 1, 0).getDate(), t = new Date();
     let cells = ''; for (let i = 0; i < first; i++) cells += '<div></div>';
     for (let d = 1; d <= days; d++) {
       const today = d === t.getDate() && calM === t.getMonth() && calY === t.getFullYear();
-      cells += '<button type="button" onclick="calPick(' + d + ')" style="aspect-ratio:1;border:' + (today ? '1px solid var(--orange)' : '1px solid transparent') + ';border-radius:12px;background:var(--surface-2);color:var(--text);font-weight:600;cursor:pointer;">' + d + '</button>';
+      cells += '<button type="button" id="calD_' + d + '" onclick="calPick(' + d + ')" style="aspect-ratio:1;border:' + (today ? '1px solid var(--orange)' : '1px solid transparent') + ';border-radius:12px;background:var(--surface-2);color:var(--text);font-weight:600;cursor:pointer;">' + d + '</button>';
     }
     const nav = 'style="width:38px;height:38px;border:none;border-radius:12px;background:var(--surface-2);color:var(--text);cursor:pointer;"';
     Swal.fire({ title: 'เลือกวันที่ของ PO', showConfirmButton: false, showCloseButton: true, width: 380,
       html: '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><button type="button" ' + nav + ' onclick="calNav(-1)"><i class="bi bi-chevron-left"></i></button><b>' + TH_M[calM] + ' ' + (calY + 543) + '</b><button type="button" ' + nav + ' onclick="calNav(1)"><i class="bi bi-chevron-right"></i></button></div>'
         + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-size:.8rem;opacity:.7;margin-bottom:6px;">' + ['อา','จ','อ','พ','พฤ','ศ','ส'].map(x => '<div>' + x + '</div>').join('') + '</div>'
-        + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">' + cells + '</div>' });
+        + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">' + cells + '</div>'
+        + '<div style="margin-top:12px;font-size:.78rem;opacity:.75;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--orange);margin-right:6px;"></span>วันที่มี PO (Posting Date)</div>' });
+    markPoDays();
   }
   async function onPoDatePicked(v) {
     if (!v) return;
