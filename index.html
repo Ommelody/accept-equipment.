@@ -620,12 +620,14 @@
         <div class="hd-tt">ข้อมูลการซื้อ<small>ค้นหารายการอัตโนมัติจากเลขที่ PO</small></div>
       </div>
       <div class="card-body row g-3">
-        <div class="col-md-3">
+        <div class="col-md-3" style="position:relative;">
           <label class="form-label">เลขที่ PO</label>
           <div class="input-group">
-            <input type="text" id="po_no" name="po_no" class="form-control" placeholder="ระบุเลขที่ PO">
+            <input type="text" id="po_no" name="po_no" class="form-control" placeholder="พิมพ์เลข PO หรือคลิกเลือกวันที่" onclick="if(!this.value) openPoCalendar()">
+            <button class="btn btn-outline-light" type="button" onclick="openPoCalendar()" title="เลือกวันที่"><i class="bi bi-calendar3"></i></button>
             <button class="btn btn-orange" type="button" onclick="handleSearchPO()"><i class="bi bi-search"></i></button>
           </div>
+          <input type="date" id="po_date_pick" tabindex="-1" aria-hidden="true" style="position:absolute;left:0;bottom:0;width:1px;height:1px;opacity:0;pointer-events:none;" onchange="onPoDatePicked(this.value)">
         </div>
         <div class="col-md-3"><label class="form-label">วันที่ซื้อ</label><input type="text" id="po_date" name="po_date" class="form-control" readonly placeholder="—"></div>
         <div class="col-md-3"><label class="form-label">เลขใบตรวจรับ</label><input type="text" name="receive_no" class="form-control"></div>
@@ -640,7 +642,11 @@
           <span class="hd-ic"><i class="bi bi-box-seam"></i></span>
           <div class="hd-tt">รายการครุภัณฑ์ &amp; สถานที่จัดเก็บ<small>เพิ่มได้ไม่จำกัด · คัดลอกเป็นชุดได้</small></div>
         </div>
-        <button type="button" class="btn btn-sm btn-orange" onclick="addItemFromLast()"><i class="bi bi-plus-lg me-1"></i> เพิ่มรายการ</button>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <input type="number" id="fa_year" class="form-control form-control-sm" style="width:96px;" min="0" max="99" placeholder="ปี ค.ศ." title="ปี ค.ศ. 2 หลัก (เว้นว่าง = ปีที่ตรวจรับ/ปีปัจจุบัน)">
+          <button type="button" class="btn btn-sm btn-outline-light" onclick="generateFA()"><i class="bi bi-magic me-1"></i> Generate เลขครุภัณฑ์</button>
+          <button type="button" class="btn btn-sm btn-orange" onclick="addItemFromLast()"><i class="bi bi-plus-lg me-1"></i> เพิ่มรายการ</button>
+        </div>
       </div>
       <div id="itemsContainer" class="card-body p-4"></div>
     </div>
@@ -694,8 +700,21 @@
       </div>
     </div>
   </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="hd-ic"><i class="bi bi-hash"></i></span>
+      <div class="hd-tt">นำเข้าเลขรันนิ่งครุภัณฑ์จาก SAP<small>ใช้เป็นฐานตั้งต้นของ Generate เลขครุภัณฑ์ (อ่านคอลัมน์ B: Item No.)</small></div>
+    </div>
+    <div class="card-body">
+      <div class="text-muted mb-3" style="font-size:.88rem;line-height:1.8;">รูปแบบ <b class="text-orange">YY-รหัสพัสดุ 10 หลัก-รัน 4 หลัก</b> เช่น 24-8010030002-0001 · ระบบจะเก็บเลขสูงสุดของแต่ละกลุ่ม (ปี + รหัสพัสดุ) และรันต่อให้ เมื่อขึ้นปีใหม่จะเริ่มนับ 0001 ใหม่</div>
+      <input type="file" id="runFile" accept=".xlsx,.xls" class="form-control mb-3">
+      <div id="runProgress" class="text-muted mb-3" style="font-size:.88rem;"></div>
+      <button type="button" id="btnRun" class="btn btn-orange w-100" onclick="readRunningFile()"><i class="bi bi-upload me-2"></i> อ่านไฟล์และนำเข้าเลขรันนิ่ง</button>
+    </div>
+  </div>
 </div>
 
+<!-- running card appended in import page -->
 <!-- PAGE: รายงาน -->
 <div class="container main-container py-4 page-section d-none" id="reportPage">
   <div class="card">
@@ -794,7 +813,7 @@
           <table class="table table-dark table-striped table-bordered text-nowrap align-middle">
             <thead>
               <tr class="text-orange">
-                <th>#</th><th>หมายเลขครุภัณฑ์</th><th>ชื่อรายการ</th><th>S/N</th><th>สถานที่ตั้ง</th><th>ราคา</th><th class="text-center">จัดการ</th>
+                <th>#</th><th>หมายเลขพัสดุ / เลขครุภัณฑ์</th><th>ชื่อรายการ</th><th>S/N</th><th>สถานที่ตั้ง</th><th>ราคา</th><th class="text-center">จัดการ</th>
               </tr>
             </thead>
             <tbody id="m_items_body"></tbody>
@@ -843,7 +862,7 @@
     <thead>
       <tr>
         <th style="width: 5%; text-align: center;">ลำดับ</th>
-        <th style="width: 15%;">หมายเลขครุภัณฑ์</th>
+        <th style="width: 15%;">หมายเลขพัสดุ</th>
         <th style="width: 25%;">รายการ (ยี่ห้อ/รุ่น)</th>
         <th style="width: 15%;">S/N</th>
         <th style="width: 25%;">สถานที่ติดตั้ง (แผนก/ชั้น/ห้อง)</th>
@@ -876,7 +895,7 @@
 
   <table class="print-table-single">
     <tr>
-      <td style="width: 50%;">หมายเลขครุภัณฑ์ : <b><span id="ps_assetId"></span></b></td>
+      <td style="width: 50%;">หมายเลขพัสดุ : <b><span id="ps_assetId"></span></b></td>
       <td style="width: 50%;">อ้างอิงเลขที่ PO : <span id="ps_poNo"></span></td>
     </tr>
     <tr>
@@ -1014,7 +1033,7 @@
             else if (onF) onF(String(err)); else console.error(err);
           });
       };
-      ['getInitialData','updatePOData','searchPO','saveFormData','getHistory','updateHistoryItem','deleteHistoryItem','importPORows','logPOImport','getImportStatus','getReportData'].forEach(m => {
+      ['getInitialData','updatePOData','searchPO','saveFormData','getHistory','updateHistoryItem','deleteHistoryItem','importPORows','logPOImport','getImportStatus','getReportData','listPOsByDate','generateFixedAssetNumbers','importRunningMax'].forEach(m => {
         h[m] = function(){ call(m, [...arguments]); return h; };
       });
       return h;
@@ -1038,8 +1057,11 @@
     Runner.prototype.logPOImport=function(){ this._done({success:true}, 200); };
     Runner.prototype.getImportStatus=function(){ this._done({success:true, last:{at:'18/6/2569 09:11', file:'sample.xlsx'}, maxPosting:'2026-06-13', totalRows:1280, history:[{at:'18/6/2569 09:11', file:'sample.xlsx', added:320, min:'2026-06-01', max:'2026-06-13'}]}, 300); };
     Runner.prototype.getReportData=function(){ const rows=[]; SAMPLE_HISTORY.forEach(g=>g.items.forEach(i=>rows.push([g.timestamp,g.po_no,g.po_date,g.receive_no,g.receive_date,g.vendor,i.assetId,i.itemName,i.unit,i.price,i.type,i.brand,i.model,i.sn,i.dept,i.floor,i.room,i.image]))); this._done({success:true, rows}, 300); };
+    Runner.prototype.generateFixedAssetNumbers=function(q){ const c={}; const yy=String(q.year).slice(-2); const nums=q.ids.map(id=>{ const m=String(id).replace(/\D/g,''); if(m.length!==10) return ''; const k=yy+'-'+m; c[k]=(c[k]||0)+1; return k+'-'+('000'+c[k]).slice(-4); }); this._done({success:true, numbers:nums, warnings:q.ids.map((id,i)=>String(id).replace(/\D/g,'').length!==10?'บรรทัดที่ '+(i+1)+': รหัสพัสดุ "'+id+'" ไม่ครบ 10 หลัก':null).filter(Boolean)}, 300); };
+    Runner.prototype.importRunningMax=function(l){ this._done({success:true, added:l.length, updated:0}, 300); };
+    Runner.prototype.listPOsByDate=function(d){ this._done({success:true, pos:[{po:'626080006', vendor:'บริษัท โกสินทร์เวชภัณฑ์ จำกัด', count:3},{po:'626080011', vendor:'หจก. สมาร์ท ออฟฟิศ', count:1}]}, 300); };
     const run = {};
-    ['withSuccessHandler','withFailureHandler','getInitialData','updatePOData','searchPO','saveFormData','getHistory','updateHistoryItem','deleteHistoryItem','importPORows','logPOImport','getImportStatus','getReportData'].forEach(m=>{
+    ['withSuccessHandler','withFailureHandler','getInitialData','updatePOData','searchPO','saveFormData','getHistory','updateHistoryItem','deleteHistoryItem','importPORows','logPOImport','getImportStatus','getReportData','listPOsByDate','generateFixedAssetNumbers','importRunningMax'].forEach(m=>{
       run[m] = function(){ const r = new Runner(); return r[m].apply(r, arguments); };
     });
     window.google = { script:{ run:run, host:{ close(){}, editor:{} } } };
@@ -1266,7 +1288,7 @@
 
   // ===== รายงาน =====
   let reportRows = null;
-  const RP_HEAD = ['วันที่บันทึกเข้าระบบ','เลขที่ PO','วันที่ซื้อ','เลขใบตรวจรับ','วันที่ตรวจรับ','บริษัทผู้ขาย','หมายเลขครุภัณฑ์','ชื่อรายการ','หน่วยนับ','ราคา','ประเภท','ยี่ห้อ','รุ่น','S/N','แผนกจัดเก็บ','ชั้น','ห้อง','รูปภาพ'];
+  const RP_HEAD = ['วันที่บันทึกเข้าระบบ','เลขที่ PO','วันที่ซื้อ','เลขใบตรวจรับ','วันที่ตรวจรับ','บริษัทผู้ขาย','หมายเลขพัสดุ','ชื่อรายการ','หน่วยนับ','ราคา','ประเภท','ยี่ห้อ','รุ่น','S/N','แผนกจัดเก็บ','ชั้น','ห้อง','รูปภาพ','เลขครุภัณฑ์ (Fix Asset)'];
   async function loadReportData(force){
     fillReportSelects();
     if (reportRows && !force) return updateReportCount();
@@ -1311,12 +1333,52 @@
     try {
       await loadXLSX();
       const ws = XLSX.utils.aoa_to_sheet([RP_HEAD].concat(rows));
-      ws['!cols'] = [22,16,12,14,12,30,18,34,8,10,16,14,14,18,20,6,16,40].map(w => ({ wch:w }));
+      ws['!cols'] = [22,16,12,14,12,30,18,34,8,10,16,14,14,18,20,6,16,40,26].map(w => ({ wch:w }));
       const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'รายงานตรวจรับ');
       XLSX.writeFile(wb, 'รายงานตรวจรับ_'+(useFilter?'ตามตัวกรอง':'ทั้งหมด')+'_'+iso(new Date())+'.xlsx');
       Swal.fire({ toast:true, position:'top-end', icon:'success', title:'ดาวน์โหลด '+rows.length.toLocaleString()+' รายการ', showConfirmButton:false, timer:2200 });
     } catch(e){ Swal.fire('Error', String(e.message||e), 'error'); }
   }
+
+  let calY = 0, calM = 0;
+  const TH_M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  function openPoCalendar() {
+    const n = new Date(); calY = n.getFullYear(); calM = n.getMonth(); showPoCal();
+  }
+  function calNav(d) { calM += d; if (calM < 0) { calM = 11; calY--; } if (calM > 11) { calM = 0; calY++; } showPoCal(); }
+  function calPick(d) { Swal.close(); onPoDatePicked(calY + '-' + String(calM+1).padStart(2,'0') + '-' + String(d).padStart(2,'0')); }
+  function showPoCal() {
+    const first = new Date(calY, calM, 1).getDay(), days = new Date(calY, calM + 1, 0).getDate(), t = new Date();
+    let cells = ''; for (let i = 0; i < first; i++) cells += '<div></div>';
+    for (let d = 1; d <= days; d++) {
+      const today = d === t.getDate() && calM === t.getMonth() && calY === t.getFullYear();
+      cells += '<button type="button" onclick="calPick(' + d + ')" style="aspect-ratio:1;border:' + (today ? '1px solid var(--orange)' : '1px solid transparent') + ';border-radius:12px;background:var(--surface-2);color:var(--text);font-weight:600;cursor:pointer;">' + d + '</button>';
+    }
+    const nav = 'style="width:38px;height:38px;border:none;border-radius:12px;background:var(--surface-2);color:var(--text);cursor:pointer;"';
+    Swal.fire({ title: 'เลือกวันที่ของ PO', showConfirmButton: false, showCloseButton: true, width: 380,
+      html: '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><button type="button" ' + nav + ' onclick="calNav(-1)"><i class="bi bi-chevron-left"></i></button><b>' + TH_M[calM] + ' ' + (calY + 543) + '</b><button type="button" ' + nav + ' onclick="calNav(1)"><i class="bi bi-chevron-right"></i></button></div>'
+        + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-size:.8rem;opacity:.7;margin-bottom:6px;">' + ['อา','จ','อ','พ','พฤ','ศ','ส'].map(x => '<div>' + x + '</div>').join('') + '</div>'
+        + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">' + cells + '</div>' });
+  }
+  async function onPoDatePicked(v) {
+    if (!v) return;
+    Swal.fire({ title: 'กำลังค้นหา PO ของวันที่เลือก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    try {
+      const r = await runP('listPOsByDate', v);
+      if (!r || !r.success) throw new Error((r && r.message) || 'ค้นหาไม่สำเร็จ');
+      const dt = thDate(v);
+      if (!r.pos.length) { $('#po_date_pick').val(''); return Swal.fire('ไม่พบ PO', 'ไม่มี PO ลงวันที่ ' + dt, 'info'); }
+      const esc2 = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+      window.__poPick = r.pos.map(x => x.po);
+      Swal.fire({ title: 'PO วันที่ ' + dt + ' (' + r.pos.length + ' ใบ)', showConfirmButton: false, showCloseButton: true, width: 560,
+        html: '<div style="max-height:55vh;overflow:auto;text-align:left;">' + r.pos.map((x, i) =>
+          '<div onclick="pickPO(' + i + ')" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;margin-bottom:8px;border:1px solid var(--border-2);border-radius:14px;background:var(--surface-2);">'
+          + '<div><b style="color:var(--orange);">' + esc2(x.po) + '</b><div style="font-size:.82rem;opacity:.8;">' + esc2(x.vendor || '-') + '</div></div>'
+          + '<span class="badge bg-primary">' + x.count + ' รายการ</span></div>').join('') + '</div>' });
+    } catch(e) { Swal.fire('Error', String(e.message || e), 'error'); }
+    $('#po_date_pick').val('');
+  }
+  function pickPO(i) { Swal.close(); $('#po_no').val(window.__poPick[i]); handleSearchPO(); }
 
   function handleSearchPO() {
     const po = $('#po_no').val();
@@ -1360,10 +1422,11 @@
            <h6 class="row-title mb-0"><i class="bi bi-box"></i> ข้อมูลครุภัณฑ์ ${qtyBadge}</h6>
         </div>
         <div class="row g-3 mb-2">
-          <div class="col-md-4"><label class="form-label">หมายเลขครุภัณฑ์ <span class="lbl-hint">เช็คจาก Master</span></label>
+          <div class="col-md-3"><label class="form-label">หมายเลขพัสดุ <span class="lbl-hint">เช็คจาก Master</span></label>
             <select class="form-control s2-asset" onchange="autoFill(this, ${id})">${assetOpts}</select></div>
-          <div class="col-md-5"><label class="form-label">ชื่อรายการ</label><input type="text" class="form-control itemName"></div>
-          <div class="col-md-3"><label class="form-label">หน่วยนับ</label><input type="text" class="form-control unit"></div>
+          <div class="col-md-3"><label class="form-label">เลขครุภัณฑ์ (Fix Asset)</label><input type="text" class="form-control fa-no" readonly placeholder="กด Generate" style="background:var(--surface-3) !important;cursor:not-allowed;opacity:.85;"></div>
+          <div class="col-md-4"><label class="form-label">ชื่อรายการ</label><input type="text" class="form-control itemName"></div>
+          <div class="col-md-2"><label class="form-label">หน่วยนับ</label><input type="text" class="form-control unit"></div>
 
           <div class="col-md-2"><label class="form-label">ราคา</label><input type="number" class="form-control price" step="0.01"></div>
           <div class="col-md-3"><label class="form-label">ประเภท</label><select class="form-control s2-type">${getOptionsHtml(db.types)}</select></div>
@@ -1464,6 +1527,56 @@
     newRow.find('.s2-room').val(srcRow.find('.s2-room').val()).trigger('change');
   }
 
+  async function generateFA() {
+    const rows = $('.item-row');
+    if (!rows.length) return Swal.fire('แจ้งเตือน', 'ยังไม่มีรายการ', 'warning');
+    let yy = String($('#fa_year').val() || '').trim();
+    if (!yy) { const d = parseAnyDate($('input[name="receive_date"]').val()) || new Date(); yy = String(d.getFullYear()).slice(-2); }
+    const ids = rows.map(function(){ return $(this).find('.s2-asset').val() || ''; }).get();
+    Swal.fire({ title: 'กำลังรันเลขครุภัณฑ์...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    try {
+      const res = await runP('generateFixedAssetNumbers', { year: yy, ids });
+      if (!res || !res.success) throw new Error((res && res.message) || 'สร้างเลขไม่สำเร็จ');
+      rows.each(function(i){ $(this).find('.fa-no').val(res.numbers[i] || ''); });
+      const ok = res.numbers.filter(Boolean).length;
+      Swal.fire({ icon: res.warnings.length ? 'warning' : 'success', title: 'สร้างเลข ' + ok + ' / ' + ids.length + ' รายการ',
+        html: res.warnings.length ? '<div style="text-align:left;font-size:.9rem;">' + res.warnings.join('<br>') + '</div>' : 'รันต่อจากค่าสุดท้ายของแต่ละกลุ่ม (ปี ' + yy + ')' });
+    } catch(e){ Swal.fire('Error', String(e.message || e), 'error'); }
+  }
+
+  async function readRunningFile() {
+    const f = $('#runFile')[0].files[0];
+    if (!f) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกไฟล์ก่อน', 'warning');
+    const prog = $('#runProgress'); $('#btnRun').prop('disabled', true);
+    try {
+      prog.html('<span class="spinner-border spinner-border-sm me-2"></span>กำลังอ่านไฟล์...');
+      await loadXLSX(); await new Promise(r => setTimeout(r, 50));
+      const wb = XLSX.read(await f.arrayBuffer(), { type:'array', dense:true });
+      const all = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header:1, raw:false, defval:'' });
+      const hi = all[0].map(x => String(x).trim()).indexOf('Item No.'), col = hi >= 0 ? hi : 1;
+      const mx = {}; let cnt = 0;
+      for (let i = 1; i < all.length; i++) {
+        const m = /^(\d{2}-\d{10})-(\d{4})$/.exec(String(all[i][col] || '').trim());
+        if (!m) continue; cnt++; const n = parseInt(m[2], 10); if (!(mx[m[1]] >= n)) mx[m[1]] = n;
+      }
+      const list = Object.keys(mx).map(p => ({ p, max: mx[p] }));
+      if (!list.length) throw new Error('ไม่พบเลขรูปแบบ YY-xxxxxxxxxx-0000 ในคอลัมน์ B');
+      const ok = await Swal.fire({ icon:'question', title:'ยืนยันนำเข้าเลขรันนิ่ง', showCancelButton:true, confirmButtonText:'นำเข้า', cancelButtonText:'ยกเลิก',
+        html:'พบเลขครุภัณฑ์ ' + cnt.toLocaleString() + ' รายการ · <b>' + list.length.toLocaleString() + '</b> กลุ่ม (ปี + รหัสพัสดุ)' });
+      if (!ok.isConfirmed) { prog.html(''); $('#btnRun').prop('disabled', false); return; }
+      let add = 0, upd = 0;
+      for (let i = 0; i < list.length; i += 2000) {
+        prog.html('<span class="spinner-border spinner-border-sm me-2"></span>กำลังบันทึก ' + Math.min(i+2000, list.length) + ' / ' + list.length);
+        const r = await runP('importRunningMax', list.slice(i, i+2000));
+        if (!r || !r.success) throw new Error((r && r.message) || 'บันทึกไม่สำเร็จ');
+        add += r.added; upd += r.updated;
+      }
+      prog.html(''); $('#runFile').val('');
+      Swal.fire('สำเร็จ', 'เพิ่มกลุ่มใหม่ ' + add + ' · อัปเดต ' + upd + ' กลุ่ม', 'success');
+    } catch(e){ prog.html(''); Swal.fire('เกิดข้อผิดพลาด', String(e.message || e), 'error'); }
+    $('#btnRun').prop('disabled', false);
+  }
+
   function addItemFromLast() {
     const last = $('.item-row').last();
     if (!last.length) return addItem();
@@ -1503,7 +1616,7 @@
       let fileInput = row.find('.photo')[0].files[0];
       let base64Image = await compressImage(fileInput);
       items.push({
-        assetId: row.find('.s2-asset').val(), itemName: row.find('.itemName').val(), unit: row.find('.unit').val(), price: row.find('.price').val(),
+        assetId: row.find('.s2-asset').val(), faNo: row.find('.fa-no').val() || '', itemName: row.find('.itemName').val(), unit: row.find('.unit').val(), price: row.find('.price').val(),
         type: row.find('.s2-type').val(), brand: row.find('.brand').val(), model: row.find('.model').val(), sn: row.find('.sn').val(),
         dept: row.find('.s2-dept').val(), floor: row.find('.s2-floor').val(), room: row.find('.s2-room').val(), image: base64Image
       });
@@ -1722,7 +1835,7 @@
     return `
       <tr>
         <td class="text-center">${i+1}</td>
-        <td class="text-warning fw-bold">${item.assetId || '-'}</td>
+        <td class="text-warning fw-bold">${item.assetId || '-'}${item.faNo ? '<br><small class="text-info">FA: ' + item.faNo + '</small>' : ''}</td>
         <td>${item.itemName} <br><small class="text-info">ยี่ห้อ: ${item.brand || '-'} / รุ่น: ${item.model || '-'}</small></td>
         <td>${item.sn || '-'}</td>
         <td>${item.dept || '-'} / ชั้น ${item.floor || '-'} / ห้อง ${item.room || '-'}</td>
@@ -1741,8 +1854,9 @@
         <td colspan="6">
           <div class="edit-panel">
             <div class="row g-2">
-              <div class="col-md-3"><label class="form-label">หมายเลขครุภัณฑ์</label><input class="form-control e_assetId" value="${esc(item.assetId)}"></div>
-              <div class="col-md-4"><label class="form-label">ชื่อรายการ</label><input class="form-control e_itemName" value="${esc(item.itemName)}"></div>
+              <div class="col-md-3"><label class="form-label">หมายเลขพัสดุ</label><input class="form-control e_assetId" value="${esc(item.assetId)}"></div>
+              <div class="col-md-3"><label class="form-label">เลขครุภัณฑ์ (Fix Asset)</label><input class="form-control e_faNo" readonly style="background:var(--surface-3) !important;cursor:not-allowed;opacity:.85;" value="${esc(item.faNo)}"></div>
+              <div class="col-md-3"><label class="form-label">ชื่อรายการ</label><input class="form-control e_itemName" value="${esc(item.itemName)}"></div>
               <div class="col-md-2"><label class="form-label">หน่วยนับ</label><input class="form-control e_unit" value="${esc(item.unit)}"></div>
               <div class="col-md-3"><label class="form-label">ราคา</label><input type="number" step="0.01" class="form-control e_price" value="${esc(String(item.price||'').replace(/,/g,''))}"></div>
 
@@ -1802,7 +1916,7 @@
     if (fileInput) newImageB64 = await compressImage(fileInput);
 
     const itemData = {
-      assetId: row.find('.e_assetId').val(), itemName: row.find('.e_itemName').val(), unit: row.find('.e_unit').val(),
+      assetId: row.find('.e_assetId').val(), faNo: row.find('.e_faNo').val(), itemName: row.find('.e_itemName').val(), unit: row.find('.e_unit').val(),
       price: row.find('.e_price').val(), type: row.find('.e_type').val(), brand: row.find('.e_brand').val(),
       model: row.find('.e_model').val(), sn: row.find('.e_sn').val(), dept: row.find('.e_dept').val(),
       floor: row.find('.e_floor').val(), room: row.find('.e_room').val(),
@@ -1813,7 +1927,7 @@
     google.script.run.withSuccessHandler(res => {
       if (res.success) {
         Object.assign(group.items[i], {
-          assetId: itemData.assetId, itemName: itemData.itemName, unit: itemData.unit, price: itemData.price,
+          assetId: itemData.assetId, faNo: itemData.faNo, itemName: itemData.itemName, unit: itemData.unit, price: itemData.price,
           type: itemData.type, brand: itemData.brand, model: itemData.model, sn: itemData.sn,
           dept: itemData.dept, floor: itemData.floor, room: itemData.room,
           image: (res.imageUrl !== undefined) ? res.imageUrl : group.items[i].image
@@ -1918,7 +2032,7 @@
       prs += `
         <tr>
           <td style="text-align: center;">${i+1}</td>
-          <td><b>${item.assetId || '-'}</b></td>
+          <td><b>${item.assetId || '-'}</b>${item.faNo ? '<br><span style="font-size:9pt;">FA: ' + item.faNo + '</span>' : ''}</td>
           <td>${item.itemName} <br><span style="font-size: 9pt; color: #555;">(ยี่ห้อ: ${item.brand || '-'} รุ่น: ${item.model || '-'})</span></td>
           <td>${item.sn || '-'}</td>
           <td>${item.dept || '-'} / ชั้น ${item.floor || '-'} / ห้อง ${item.room || '-'}</td>
@@ -1940,7 +2054,7 @@
     const item = group.items[itemIndex];
 
     $('#ps_itemName').text(item.itemName || '-');
-    $('#ps_assetId').text(item.assetId || '-');
+    $('#ps_assetId').text((item.assetId || '-') + (item.faNo ? '  (เลขครุภัณฑ์ ' + item.faNo + ')' : ''));
     $('#ps_poNo').text(group.po_no || '-');
 
     const locationStr = `${item.dept} ชั้น ${item.floor} ห้อง ${item.room}`;
